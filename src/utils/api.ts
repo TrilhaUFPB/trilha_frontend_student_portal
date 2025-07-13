@@ -243,3 +243,63 @@ export async function deleteRating(id: number) {
 export async function fetchAllRoles() {
   return apiFetch(`${BACKEND_URL}/api/roles`);
 } 
+
+// =============================================================================
+// STUDENT-SPECIFIC HELPER FUNCTIONS
+// =============================================================================
+
+// Helper function to get submissions for a specific assignment
+export async function fetchSubmissionsByAssignmentId(assignmentId: number) {
+  const allSubmissions = await fetchAllSubmissions();
+  return (allSubmissions as any[]).filter(s => s.assignment_id === assignmentId);
+}
+
+// Helper function to get user's submission for a specific assignment
+export async function fetchUserSubmissionForAssignment(assignmentId: number, userId: number) {
+  const submissions = await fetchSubmissionsByAssignmentId(assignmentId);
+  return submissions.find(s => s.user_id === userId);
+}
+
+// Helper function to get group's submission for a specific assignment
+export async function fetchGroupSubmissionForAssignment(assignmentId: number, groupId: number) {
+  const submissions = await fetchSubmissionsByAssignmentId(assignmentId);
+  return submissions.find(s => s.group_id === groupId);
+}
+
+// Helper function to get groups for a specific assignment
+export async function fetchGroupsByAssignmentId(assignmentId: number) {
+  const allGroups = await fetchAllGroups();
+  return (allGroups as any[]).filter(g => g.assignment_id === assignmentId);
+}
+
+// Helper function to get group members for a specific group
+export async function fetchGroupMembersByGroupId(groupId: number) {
+  const allMembers = await fetchAllGroupMembers();
+  return (allMembers as any[]).filter(m => m.group_id === groupId);
+}
+
+// Helper function to check if user is in a group for an assignment
+export async function fetchUserGroupForAssignment(assignmentId: number, userId: number) {
+  const groups = await fetchGroupsByAssignmentId(assignmentId);
+  const allMembers = await fetchAllGroupMembers();
+  
+  for (const group of groups) {
+    const isMember = (allMembers as any[]).some((m: any) => m.group_id === group.id && m.user_id === userId);
+    if (isMember) {
+      return group;
+    }
+  }
+  return null;
+}
+
+// Helper function to get comments for a specific submission
+export async function fetchCommentsBySubmissionId(submissionId: number) {
+  const allComments = await fetchAllComments();
+  return (allComments as any[]).filter(c => c.submission_id === submissionId);
+}
+
+// Helper function to get ratings for a specific submission
+export async function fetchRatingsBySubmissionId(submissionId: number) {
+  const allRatings = await fetchAllRatings();
+  return (allRatings as any[]).filter(r => r.submission_id === submissionId);
+} 
