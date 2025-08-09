@@ -3,7 +3,11 @@ export function setToken(token: string) {
 }
 
 export function getToken(): string | null {
-  return localStorage.getItem("jwt");
+  // Check if we're in a browser environment
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return localStorage.getItem("jwt");
+  }
+  return null;
 }
 
 export function removeToken() {

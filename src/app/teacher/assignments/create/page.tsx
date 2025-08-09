@@ -25,7 +25,11 @@ export default function CreateAssignmentPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "teacher") {
+    } else if (
+      !loading &&
+      user &&
+      !(user.role.name === "teacher" || user.role.name === "admin")
+    ) {
       router.push("/");
     }
   }, [loading, user, router]);

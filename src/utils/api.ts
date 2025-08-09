@@ -59,12 +59,27 @@ export async function deleteUser(id: number) {
 // ASSIGNMENT MANAGEMENT
 // =============================================================================
 
+type RawAssignment = any;
+const mapAssignment = (a: RawAssignment) => ({
+  id: a?.id ?? a?.ID,
+  title: a?.title ?? a?.Title,
+  description: a?.description ?? a?.Description ?? "",
+  due_date: a?.due_date ?? a?.DueDate ?? null,
+  is_group_work: a?.is_group_work ?? a?.IsGroupWork ?? false,
+  github_link: a?.github_link ?? a?.GithubLink ?? undefined,
+});
+
 export async function fetchAllAssignments() {
-  return apiFetch(`${BACKEND_URL}/api/assignments`);
+  const data = await apiFetch(`${BACKEND_URL}/api/assignments`);
+  if (Array.isArray(data)) {
+    return data.map(mapAssignment);
+  }
+  return [];
 }
 
 export async function fetchAssignmentById(id: number) {
-  return apiFetch(`${BACKEND_URL}/api/assignments/${id}`);
+  const data = await apiFetch(`${BACKEND_URL}/api/assignments/${id}`);
+  return mapAssignment(data);
 }
 
 export async function createAssignment(assignmentData: any) {
