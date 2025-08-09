@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app), matching the tech stack of the main website.
-
 ## Tech Stack
 - Next.js 15 (App Router, TypeScript)
 - React 19
