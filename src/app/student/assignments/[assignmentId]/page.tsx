@@ -8,9 +8,9 @@ interface Assignment {
   id: number;
   title: string;
   description: string;
-  githubLink: string;
-  dueDate: string;
-  isGroupWork: boolean;
+  github_link: string;
+  due_date: string;
+  is_group_work: boolean;
 }
 
 export async function generateStaticParams() {

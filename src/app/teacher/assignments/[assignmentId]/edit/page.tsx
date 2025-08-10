@@ -118,10 +118,10 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
     }
     
     if (formData.due_date && formData.due_date.trim()) {
-      const dueDate = new Date(formData.due_date);
+      const due_date = new Date(formData.due_date);
       const now = new Date();
       
-      if (isNaN(dueDate.getTime())) {
+      if (isNaN(due_date.getTime())) {
         newErrors.due_date = "Please enter a valid date";
       }
       // Allow past dates for editing (assignment might already be overdue)
@@ -193,9 +193,9 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
 
   const getDaysUntilDue = () => {
     if (!formData.due_date) return null;
-    const dueDate = new Date(formData.due_date);
+    const due_date = new Date(formData.due_date);
     const now = new Date();
-    const diffTime = dueDate.getTime() - now.getTime();
+    const diffTime = due_date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
@@ -203,7 +203,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
   const hasChanges = () => {
     if (!originalAssignment) return false;
     
-    const originalDueDate = originalAssignment.due_date 
+    const originaldue_date = originalAssignment.due_date 
       ? new Date(originalAssignment.due_date).toISOString().slice(0, 16)
       : "";
     
@@ -211,7 +211,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
       formData.title !== originalAssignment.title ||
       formData.description !== originalAssignment.description ||
       formData.github_link !== (originalAssignment.github_link || "") ||
-      formData.due_date !== originalDueDate ||
+      formData.due_date !== originaldue_date ||
       formData.is_group_work !== originalAssignment.is_group_work
     );
   };

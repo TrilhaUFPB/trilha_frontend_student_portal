@@ -64,9 +64,9 @@ const mapAssignment = (a: RawAssignment) => ({
   id: a?.id ?? a?.ID,
   title: a?.title ?? a?.Title,
   description: a?.description ?? a?.Description ?? "",
-  due_date: a?.due_date ?? a?.DueDate ?? null,
-  is_group_work: a?.is_group_work ?? a?.IsGroupWork ?? false,
-  github_link: a?.github_link ?? a?.GithubLink ?? undefined,
+  due_date: a?.due_date ?? a?.due_date ?? null,
+  is_group_work: a?.is_group_work ?? a?.is_group_work ?? false,
+  github_link: a?.github_link ?? a?.github_link ?? undefined,
 });
 
 export async function fetchAllAssignments() {

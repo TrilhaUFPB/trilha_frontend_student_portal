@@ -86,9 +86,9 @@ export default function TeacherAssignmentsPage() {
         const groups = (allGroups as Group[]).filter(g => g.assignment_id === assignment.id);
         
         const now = new Date();
-        const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
-        const isOverdue = dueDate ? dueDate < now : false;
-        const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+        const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
+        const isOverdue = due_date ? due_date < now : false;
+        const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
         
         return {
           ...assignment,

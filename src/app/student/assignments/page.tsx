@@ -97,9 +97,9 @@ export default function StudentAssignmentsPage() {
           
           // Calculate due date info
           const now = new Date();
-          const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
-          const isOverdue = dueDate ? dueDate < now : false;
-          const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+          const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
+          const isOverdue = due_date ? due_date < now : false;
+          const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
           
           // Determine if user can submit
           let canSubmit = !hasSubmission;

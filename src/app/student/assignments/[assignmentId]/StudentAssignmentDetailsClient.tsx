@@ -19,9 +19,9 @@ interface Assignment {
   id: number;
   title: string;
   description: string;
-  githubLink: string;
-  dueDate: string;
-  isGroupWork: boolean;
+  github_link: string;
+  due_date: string;
+  is_group_work: boolean;
 }
 
 interface User {
@@ -114,7 +114,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
 
       // Fetch user's submission
       let submissionData: Submission | null = null;
-      if (assignment.isGroupWork) {
+      if (assignment.is_group_work) {
         // For group work, check if user has a group first
         try {
           const groupData = await fetchUserGroupForAssignment(assignmentId, currentUserData.id);
@@ -176,7 +176,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
       const submissionData = {
         assignmentId,
         submissionLink: submissionLink.trim(),
-        ...(assignment.isGroupWork && userGroup ? { groupId: userGroup.id } : { userId: currentUser?.id }),
+        ...(assignment.is_group_work && userGroup ? { groupId: userGroup.id } : { userId: currentUser?.id }),
       };
 
       if (submission) {
@@ -201,7 +201,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
   const getSubmissionStatus = () => {
     if (!submission) return "Not Submitted";
     
-    if (assignment.isGroupWork && !userGroup) return "No Group";
+    if (assignment.is_group_work && !userGroup) return "No Group";
     
     return submission.status === "submitted" ? "Submitted" : submission.status;
   };
@@ -216,8 +216,8 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
     }
   };
 
-  const isOverdue = new Date(assignment.dueDate) < new Date();
-  const canSubmit = assignment.isGroupWork ? userGroup !== null : true;
+  const isOverdue = new Date(assignment.due_date) < new Date();
+  const canSubmit = assignment.is_group_work ? userGroup !== null : true;
 
   if (loading) {
     return (
@@ -252,11 +252,11 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
           <div className="flex gap-2">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              assignment.isGroupWork 
+              assignment.is_group_work 
                 ? 'bg-purple-100 text-purple-800' 
                 : 'bg-blue-100 text-blue-800'
             }`}>
-              {assignment.isGroupWork ? 'Group Assignment' : 'Individual Assignment'}
+              {assignment.is_group_work ? 'Group Assignment' : 'Individual Assignment'}
             </span>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor()}`}>
               {getSubmissionStatus()}
@@ -264,7 +264,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               isOverdue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
             }`}>
-              Due: {new Date(assignment.dueDate).toLocaleDateString()}
+              Due: {new Date(assignment.due_date).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
             Back to Assignments
           </button>
           <a
-            href={assignment.githubLink}
+            href={assignment.github_link}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -297,7 +297,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           </div>
         )}
 
-        {assignment.isGroupWork && !userGroup && (
+        {assignment.is_group_work && !userGroup && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-center gap-2">
               <span className="text-yellow-600">⚠️</span>
@@ -330,7 +330,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           >
             {submission ? 'Update Submission' : 'Submit Assignment'}
           </button>
-          {assignment.isGroupWork && (
+          {assignment.is_group_work && (
             <button
               onClick={() => setActiveTab('group')}
               className={`px-6 py-3 font-medium text-sm ${
@@ -369,19 +369,19 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Assignment Link</h3>
                 <a
-                  href={assignment.githubLink}
+                  href={assignment.github_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 break-all"
                 >
-                  {assignment.githubLink}
+                  {assignment.github_link}
                 </a>
               </div>
 
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Due Date</h3>
                 <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-green-600'}`}>
-                  {new Date(assignment.dueDate).toLocaleDateString()} at {new Date(assignment.dueDate).toLocaleTimeString()}
+                  {new Date(assignment.due_date).toLocaleDateString()} at {new Date(assignment.due_date).toLocaleTimeString()}
                 </p>
               </div>
 
@@ -429,7 +429,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                   </p>
                 </div>
 
-                {!canSubmit && assignment.isGroupWork && (
+                {!canSubmit && assignment.is_group_work && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-yellow-800">
                       You need to join a group before you can submit this assignment.
@@ -449,7 +449,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           )}
 
           {/* Group Management Tab */}
-          {activeTab === 'group' && assignment.isGroupWork && (
+          {activeTab === 'group' && assignment.is_group_work && (
             <div className="space-y-4">
               {userGroup ? (
                 <div>

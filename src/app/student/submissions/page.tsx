@@ -234,8 +234,8 @@ export default function StudentSubmissionsPage() {
     }
   };
 
-  const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
+  const isOverdue = (due_date: string) => {
+    return new Date(due_date) < new Date();
   };
 
   if (loading || loadingData) {
