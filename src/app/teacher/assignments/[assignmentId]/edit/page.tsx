@@ -9,15 +9,7 @@ import {
   fetchAllGroups
 } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
+import { AssignmentTeacherDashboard } from "@/types/interfaces";
 
 export default function EditAssignmentPage({ params }: { params: { assignmentId: string } }) {
   const { user, loading } = useAuth();
@@ -33,7 +25,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
     is_group_work: false
   });
   
-  const [originalAssignment, setOriginalAssignment] = useState<Assignment | null>(null);
+  const [originalAssignment, setOriginalAssignment] = useState<AssignmentTeacherDashboard | null>(null);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -65,7 +57,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
         fetchAllGroups()
       ]);
       
-      const assignmentData = assignment as Assignment;
+      const assignmentData = assignment as AssignmentTeacherDashboard;
       setOriginalAssignment(assignmentData);
       
       // Check if assignment has submissions or groups

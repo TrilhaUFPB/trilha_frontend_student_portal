@@ -4,16 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllUsers } from "@/utils/api";
 import Link from "next/link";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role_id: number;
-  role: { id: number; name: string };
-  created_at: string;
-  updated_at: string;
-}
+import { User } from "@/types/interfaces";
 
 export default function TeacherUsersPage() {
   const { user, loading } = useAuth();

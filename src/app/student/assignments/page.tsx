@@ -8,35 +8,7 @@ import {
   fetchUserGroupForAssignment
 } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  user_id?: number;
-  group_id?: number;
-  submission_link: string;
-  submitted_at: string;
-  version: number;
-  status: string;
-}
-
-interface AssignmentWithStatus extends Assignment {
-  hasSubmission: boolean;
-  submission?: Submission;
-  userGroup?: any;
-  isOverdue: boolean;
-  daysUntilDue?: number;
-  canSubmit: boolean;
-}
+import { AssignmentTeacherDashboard, SubmissionTeacher , AssignmentWithStatus} from "@/types/interfaces";
 
 export default function StudentAssignmentsPage() {
   const { user, loading } = useAuth();
@@ -74,19 +46,19 @@ export default function StudentAssignmentsPage() {
       
       // Enrich assignments with submission status and other info
       const enrichedAssignments: AssignmentWithStatus[] = await Promise.all(
-        (allAssignments as Assignment[]).map(async (assignment) => {
+        (allAssignments as AssignmentTeacherDashboard[]).map(async (assignment) => {
           // Check for user's submission (individual assignments)
-          let userSubmission = (allSubmissions as Submission[]).find(s => 
+          let userSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
             s.assignment_id === assignment.id && s.user_id === user!.id
           );
           
                      // Check for group submission and user's group (group assignments)
            let userGroup: any = null;
-           let groupSubmission: Submission | undefined = undefined;
+           let groupSubmission: SubmissionTeacher | undefined = undefined;
            if (assignment.is_group_work) {
              userGroup = await fetchUserGroupForAssignment(assignment.id, user!.id);
              if (userGroup) {
-               groupSubmission = (allSubmissions as Submission[]).find(s => 
+               groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
                  s.assignment_id === assignment.id && s.group_id === userGroup.id
                );
              }

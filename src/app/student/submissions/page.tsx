@@ -11,54 +11,10 @@ import {
   fetchGroupById
 } from "@/utils/api";
 import Link from "next/link";
+import { AssignmentTeacherDashboard, SubmissionTeacher, Group, Comment, Rating } from "@/types/interfaces";
 
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  user_id?: number;
-  group_id?: number;
-  submission_link: string;
-  submitted_at: string;
-  version: number;
-  status: string;
-}
-
-interface Group {
-  id: number;
-  assignment_id: number;
-  name: string;
-  leader_id: number;
-  created_at: string;
-}
-
-interface Comment {
-  id: number;
-  submission_id: number;
-  user_id: number;
-  comment: string;
-  commented_at: string;
-}
-
-interface Rating {
-  id: number;
-  submission_id: number;
-  rater_id: number;
-  score: number;
-  feedback: string;
-  rated_at: string;
-}
-
-interface SubmissionWithDetails extends Submission {
-  assignment: Assignment;
+interface SubmissionWithDetails extends SubmissionTeacher {
+  assignment: AssignmentTeacherDashboard;
   group?: Group;
   comments: Comment[];
   ratings: Rating[];
@@ -70,7 +26,7 @@ export default function StudentSubmissionsPage() {
   const router = useRouter();
   
   const [submissions, setSubmissions] = useState<SubmissionWithDetails[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [filter, setFilter] = useState<"all" | "individual" | "group">("all");
   const [sortBy, setSortBy] = useState<"date" | "assignment" | "status">("date");
@@ -101,17 +57,17 @@ export default function StudentSubmissionsPage() {
       ]);
       
       // Filter submissions for the current user
-      const userSubmissions = (allSubmissions as Submission[]).filter(s => 
+      const userSubmissions = (allSubmissions as SubmissionTeacher[]).filter(s => 
         s.user_id === user!.id
       );
       
       // Find group submissions for assignments where user is in a group
-      const groupSubmissions: Submission[] = [];
-      for (const assignment of allAssignments as Assignment[]) {
+      const groupSubmissions: SubmissionTeacher[] = [];
+      for (const assignment of allAssignments as AssignmentTeacherDashboard[]) {
         if (assignment.is_group_work) {
           const userGroup = await fetchUserGroupForAssignment(assignment.id, user!.id);
           if (userGroup) {
-            const groupSubmission = (allSubmissions as Submission[]).find(s => 
+            const groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
               s.assignment_id === assignment.id && s.group_id === userGroup.id
             );
             if (groupSubmission) {
@@ -132,7 +88,7 @@ export default function StudentSubmissionsPage() {
       // Enrich submissions with assignment details, comments, and ratings
       const enrichedSubmissions: SubmissionWithDetails[] = await Promise.all(
         uniqueSubmissions.map(async (submission) => {
-          const assignment = (allAssignments as Assignment[]).find(a => a.id === submission.assignment_id)!;
+          const assignment = (allAssignments as AssignmentTeacherDashboard[]).find(a => a.id === submission.assignment_id)!;
           const comments = await fetchCommentsBySubmissionId(submission.id);
           const ratings = await fetchRatingsBySubmissionId(submission.id);
           
@@ -161,7 +117,7 @@ export default function StudentSubmissionsPage() {
       );
       
       setSubmissions(enrichedSubmissions);
-      setAssignments(allAssignments as Assignment[]);
+      setAssignments(allAssignments as AssignmentTeacherDashboard[]);
       
     } catch (error) {
       console.error("Error loading submissions data:", error);

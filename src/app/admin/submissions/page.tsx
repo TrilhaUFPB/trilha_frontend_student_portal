@@ -3,31 +3,16 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { fetchAllSubmissions, fetchAllAssignments, fetchGroupById } from "@/utils/api";
+import { fetchAllSubmissions, fetchAllAssignments } from "@/utils/api";
 import Link from "next/link";
+import { SubmissionTeacher, AssignmentSubmissions } from "@/types/interfaces";
 
-interface Assignment {
-  id: number;
-  title: string;
-  due_date?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  user_id?: number;
-  group_id?: number;
-  submission_link: string;
-  submitted_at: string;
-  version: number;
-  status: string;
-}
 
 export default function AdminSubmissionsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionTeacher[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentSubmissions[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -45,8 +30,8 @@ export default function AdminSubmissionsPage() {
           fetchAllSubmissions(),
           fetchAllAssignments(),
         ]);
-        setSubmissions(subs as Submission[]);
-        setAssignments(asg as Assignment[]);
+        setSubmissions(subs as SubmissionTeacher[]);
+        setAssignments(asg as AssignmentSubmissions[]);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Failed to load submissions", e);

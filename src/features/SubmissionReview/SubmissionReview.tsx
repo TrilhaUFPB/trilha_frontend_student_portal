@@ -16,14 +16,14 @@ import {
   deleteRating,
   fetchCurrentUser,
 } from "@/utils/api";
-import { AssignmentReview, SubmissionReview, CommentReview, RatingReview, UserReview, GroupReview } from "@/types/interfaces"
+import { AssignmentReview3, SubmissionReview, CommentReview, RatingReview, UserReview, GroupReview } from "@/types/interfaces"
 
 export default function SubmissionReviewPage() {
   const params = useParams();
   const router = useRouter();
   const assignmentId = parseInt(params?.assignmentId as string);
 
-  const [AssignmentReview, setAssignment] = useState<AssignmentReview | null>(null);
+  const [AssignmentReview, setAssignment] = useState<AssignmentReview3 | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionReview[]>([]);
   const [submissionDetails, setSubmissionDetails] = useState<{
     [key: number]: {
@@ -62,7 +62,7 @@ export default function SubmissionReviewPage() {
         fetchCurrentUser(),
       ]);
 
-      setAssignment(assignmentData as AssignmentReview);
+      setAssignment(assignmentData as AssignmentReview3);
       setCurrentUser(currentUserData as UserReview);
 
       // Fetch submissions

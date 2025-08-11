@@ -4,38 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllAssignments, fetchAllSubmissions, fetchAllUsers } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  github_link: string;
-  submitted_at: string;
-  user_id?: number;
-  group_id?: number;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: { id: number; name: string };
-}
+import { AssignmentTeacherDashboard, SubmissionTeacherDashboard, UserTeacherDashboard } from "@/types/interfaces";
 
 export default function TeacherDashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionTeacherDashboard[]>([]);
+  const [users, setUsers] = useState<UserTeacherDashboard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -60,9 +36,9 @@ export default function TeacherDashboard() {
         fetchAllSubmissions(),
         fetchAllUsers(),
       ]);
-      setAssignments(assignmentsData as Assignment[]);
-      setSubmissions(submissionsData as Submission[]);
-      setUsers(usersData as User[]);
+      setAssignments(assignmentsData as AssignmentTeacherDashboard[]);
+      setSubmissions(submissionsData as SubmissionTeacherDashboard[]);
+      setUsers(usersData as UserTeacherDashboard[]);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

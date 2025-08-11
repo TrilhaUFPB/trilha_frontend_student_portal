@@ -1,17 +1,8 @@
 import { 
-  fetchAssignmentById, 
-  fetchAllAssignments,
+  fetchAssignmentById
 } from "@/utils/api";
 import StudentAssignmentDetailsClient from "./StudentAssignmentDetailsClient";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  github_link: string;
-  due_date: string;
-  is_group_work: boolean;
-}
+import { AssignmentReview3 } from "@/types/interfaces";
 
 export async function generateStaticParams() {
   // During static generation, we can't authenticate with the backend
@@ -28,7 +19,7 @@ export default async function StudentAssignmentDetailsPage({
   const assignmentId = parseInt(params.assignmentId);
   
   try {
-    const assignment = await fetchAssignmentById(assignmentId) as Assignment;
+    const assignment = await fetchAssignmentById(assignmentId) as AssignmentReview3;
     
     return (
       <StudentAssignmentDetailsClient 

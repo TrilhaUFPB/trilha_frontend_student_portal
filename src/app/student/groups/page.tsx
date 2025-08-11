@@ -11,69 +11,18 @@ import {
   createGroup,
   addGroupMember,
   removeGroupMember,
-  fetchGroupById
 } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Group {
-  id: number;
-  assignment_id: number;
-  name: string;
-  leader_id: number;
-  created_at: string;
-  assignment?: Assignment;
-}
-
-interface GroupMember {
-  group_id: number;
-  user_id: number;
-  joined_at: string;
-  user?: any;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: { name: string };
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  user_id?: number;
-  group_id?: number;
-  submission_link: string;
-  submitted_at: string;
-  version: number;
-  status: string;
-}
-
-interface GroupWithDetails extends Group {
-  members: GroupMember[];
-  memberCount: number;
-  isUserMember: boolean;
-  isUserLeader: boolean;
-  submission?: Submission;
-}
+import { AssignmentTeacherDashboard, GroupAssignment, GroupMember, UserGroups, SubmissionTeacher, GroupWithDetails } from "@/types/interfaces";
 
 export default function StudentGroupsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
   const [groups, setGroups] = useState<GroupWithDetails[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
+  const [users, setUsers] = useState<UserGroups[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionTeacher[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [filter, setFilter] = useState<"all" | "my-groups" | "available">("all");
   const [sortBy, setSortBy] = useState<"date" | "assignment" | "members">("date");
@@ -113,8 +62,8 @@ export default function StudentGroupsPage() {
       ]);
       
       // Only show groups for group assignments
-      const groupAssignments = (allAssignments as Assignment[]).filter(a => a.is_group_work);
-      const relevantGroups = (allGroups as Group[]).filter(g => 
+      const groupAssignments = (allAssignments as AssignmentTeacherDashboard[]).filter(a => a.is_group_work);
+      const relevantGroups = (allGroups as GroupAssignment[]).filter(g => 
         groupAssignments.some(a => a.id === g.assignment_id)
       );
       
@@ -123,7 +72,7 @@ export default function StudentGroupsPage() {
         relevantGroups.map(async (group) => {
           const members = await fetchGroupMembersByGroupId(group.id);
           const assignment = groupAssignments.find(a => a.id === group.assignment_id);
-          const submission = (allSubmissions as Submission[]).find(s => s.group_id === group.id);
+          const submission = (allSubmissions as SubmissionTeacher[]).find(s => s.group_id === group.id);
           
           const isUserMember = members.some(m => m.user_id === user!.id);
           const isUserLeader = group.leader_id === user!.id;
@@ -142,8 +91,8 @@ export default function StudentGroupsPage() {
       
       setGroups(enrichedGroups);
       setAssignments(groupAssignments);
-      setUsers(allUsers as User[]);
-      setSubmissions(allSubmissions as Submission[]);
+      setUsers(allUsers as UserGroups[]);
+      setSubmissions(allSubmissions as SubmissionTeacher[]);
       
     } catch (error) {
       console.error("Error loading groups data:", error);

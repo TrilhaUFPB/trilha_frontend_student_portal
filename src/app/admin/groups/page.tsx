@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllGroups, fetchAllAssignments, fetchGroupMembersByGroupId } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment { id: number; title: string; }
+import { AssignmentTeacher } from "@/types/interfaces";
 interface Group { id: number; assignment_id: number; name: string; leader_id?: number; created_at: string; }
 interface GroupMember { group_id: number; user_id: number; }
 
@@ -14,7 +13,7 @@ export default function AdminGroupsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacher[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<number, number>>({});
   const [loadingData, setLoadingData] = useState(true);
 
@@ -34,7 +33,7 @@ export default function AdminGroupsPage() {
           fetchAllAssignments(),
         ]);
         setGroups(gs as Group[]);
-        setAssignments(as as Assignment[]);
+        setAssignments(as as AssignmentTeacher[]);
         // member counts
         const counts: Record<number, number> = {};
         for (const g of gs as Group[]) {
