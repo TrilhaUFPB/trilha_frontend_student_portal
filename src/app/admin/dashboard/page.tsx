@@ -4,46 +4,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllAssignments, fetchAllSubmissions, fetchAllUsers, fetchAllGroups } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  github_link: string;
-  submitted_at: string;
-  user_id?: number;
-  group_id?: number;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: { id: number; name: string };
-}
-
-interface Group {
-  id: number;
-  name: string;
-  assignment_id: number;
-  leader_id: number;
-}
+import { UserTeacherDashboard, AssignmentTeacherDashboard, SubmissionTeacherDashboard, GroupDashboard } from "@/types/interfaces";
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionTeacherDashboard[]>([]);
+  const [users, setUsers] = useState<UserTeacherDashboard[]>([]);
+  const [groups, setGroups] = useState<GroupDashboard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -69,10 +38,10 @@ export default function AdminDashboard() {
         fetchAllUsers(),
         fetchAllGroups(),
       ]);
-      setAssignments(assignmentsData as Assignment[]);
-      setSubmissions(submissionsData as Submission[]);
-      setUsers(usersData as User[]);
-      setGroups(groupsData as Group[]);
+      setAssignments(assignmentsData as AssignmentTeacherDashboard[]);
+      setSubmissions(submissionsData as SubmissionTeacherDashboard[]);
+      setUsers(usersData as UserTeacherDashboard[]);
+      setGroups(groupsData as GroupDashboard[]);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

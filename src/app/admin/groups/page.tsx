@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllGroups, fetchAllAssignments, fetchGroupMembersByGroupId } from "@/utils/api";
 import Link from "next/link";
-import { AssignmentTeacher } from "@/types/interfaces";
-interface Group { id: number; assignment_id: number; name: string; leader_id?: number; created_at: string; }
-interface GroupMember { group_id: number; user_id: number; }
+import { AssignmentTeacher, GroupGroups, GroupAdmin } from "@/types/interfaces";
 
 export default function AdminGroupsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<GroupGroups[]>([]);
   const [assignments, setAssignments] = useState<AssignmentTeacher[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<number, number>>({});
   const [loadingData, setLoadingData] = useState(true);
@@ -32,12 +30,12 @@ export default function AdminGroupsPage() {
           fetchAllGroups(),
           fetchAllAssignments(),
         ]);
-        setGroups(gs as Group[]);
+        setGroups(gs as GroupGroups[]);
         setAssignments(as as AssignmentTeacher[]);
         // member counts
         const counts: Record<number, number> = {};
-        for (const g of gs as Group[]) {
-          const ms = (await fetchGroupMembersByGroupId(g.id)) as GroupMember[];
+        for (const g of gs as GroupGroups[]) {
+          const ms = (await fetchGroupMembersByGroupId(g.id)) as GroupAdmin[];
           counts[g.id] = ms.length;
         }
         setMemberCounts(counts);

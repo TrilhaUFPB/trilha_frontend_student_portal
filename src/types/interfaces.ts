@@ -36,16 +36,7 @@ export interface SubmissionReview {
   GroupReview?: GroupReview;
 }
 
-export interface SubmissionReview2 extends SubmissionReview {
-  id: number;
-  assignmentId: number;
-  userId?: number;
-  groupId?: number;
-  submissionLink: string;
-  submittedAt: string;
-  version: number;
-  status: string;
-}
+export type SubmissionReview2 = Omit<SubmissionReview, "UserReview" | "GroupReview">;
 
 export interface AssignmentReview {
   id: number;
@@ -80,7 +71,6 @@ export interface GroupReview {
   assignmentId: number;
   maxMembers: number;
 }
-
 
 export interface CommentReview {
   id: number;
@@ -170,12 +160,21 @@ export interface GroupStudent extends Group {
   maxMembers: number;
 }
 
+export interface GroupDashboard {
+  id: number;
+  name: string;
+  assignment_id: number;
+  leader_id: number;
+}
+
 export interface GroupMember {
   group_id: number;
   user_id: number;
   joined_at: string;
   user?: any;
 }
+
+export type GroupAdmin = Omit<GroupMember, "joined_at" | "user">;
 
 export interface GroupMember3 extends GroupMember {
   id: number;

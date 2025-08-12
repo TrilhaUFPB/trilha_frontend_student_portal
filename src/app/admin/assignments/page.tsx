@@ -5,19 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllAssignments } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date?: string;
-  is_group_work: boolean;
-}
+import { AssignmentTeacherDashboard } from "@/types/interfaces";
 
 export default function AdminAssignmentsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -32,7 +25,7 @@ export default function AdminAssignmentsPage() {
       try {
         setLoadingData(true);
         const data = await fetchAllAssignments();
-        setAssignments(data as Assignment[]);
+        setAssignments(data as AssignmentTeacherDashboard[]);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Failed to load assignments", e);
