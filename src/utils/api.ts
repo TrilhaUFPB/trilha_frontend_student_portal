@@ -1,6 +1,6 @@
 import { getToken } from "./auth";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8080";
 
 export async function apiFetch<T>(
   url: string,
@@ -77,8 +77,8 @@ export async function fetchAllAssignments() {
   return [];
 }
 
-export async function fetchAssignmentById(id: number) {
-  const data = await apiFetch(`${BACKEND_URL}/api/assignments/${id}`);
+export async function fetchAssignmentById(id: number, options: RequestInit = {}) {
+  const data = await apiFetch(`${BACKEND_URL}/api/assignments/${id}`, options);
   return mapAssignment(data);
 }
 
