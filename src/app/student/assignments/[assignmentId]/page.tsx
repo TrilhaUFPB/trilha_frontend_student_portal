@@ -1,15 +1,9 @@
-import { 
+import {
   fetchAssignmentById
 } from "@/utils/api";
 import StudentAssignmentDetailsClient from "./StudentAssignmentDetailsClient";
 import { AssignmentReview3 } from "@/types/interfaces";
-
-export async function generateStaticParams() {
-  // During static generation, we can't authenticate with the backend
-  // Return empty array to make this a dynamic route
-  // This is appropriate since student assignment pages require user-specific data
-  return [];
-}
+import { cookies } from "next/headers";
 
 export default async function StudentAssignmentDetailsPage({
   params,
@@ -17,13 +11,27 @@ export default async function StudentAssignmentDetailsPage({
   params: { assignmentId: string };
 }) {
   const assignmentId = parseInt(params.assignmentId);
-  
+
   try {
-    const assignment = await fetchAssignmentById(assignmentId) as AssignmentReview3;
-    
+
+    const cookieStore = await cookies()
+    const tokenCookie = cookieStore.get('jwt')
+    const token = tokenCookie?.value
+
+    if (!token) {
+      throw new Error("Não autorizado: Token de autenticação não encontrado.")
+    }
+    const headersParaBackend = {
+      'Authorization': `Bearer ${token}`,
+    };
+
+    const assignment = await fetchAssignmentById(assignmentId, {
+      headers: headersParaBackend
+    }) as AssignmentReview3;
+
     return (
-      <StudentAssignmentDetailsClient 
-        assignment={assignment} 
+      <StudentAssignmentDetailsClient
+        assignment={assignment}
         assignmentId={assignmentId}
       />
     );
