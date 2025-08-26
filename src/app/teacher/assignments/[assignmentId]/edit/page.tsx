@@ -14,7 +14,7 @@ import { AssignmentTeacherDashboard } from "@/types/interfaces";
 export default function EditAssignmentPage({
   params: paramsPromise,
 }: {
-    params: Promise<{ assignmentId: string }>;
+  params: Promise<{ assignmentId: string }>;
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -41,13 +41,13 @@ export default function EditAssignmentPage({
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "teacher") {
+    } else if (!loading && user && user.role.name !== "teacher" && !loading && user && user.role.name !== "admin" ) {
       router.push("/");
     }
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user && user.role.name === "teacher") {
+    if (user && user.role.name === "teacher" || user && user.role.name === "admin") {
       loadAssignmentData();
     }
   }, [user, assignmentId]);
