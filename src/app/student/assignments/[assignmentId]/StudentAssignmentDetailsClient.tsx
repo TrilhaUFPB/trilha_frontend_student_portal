@@ -114,9 +114,9 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
       setError(null);
 
       const submissionData = {
-        assignmentId,
-        submissionLink: submissionLink.trim(),
-        ...(assignment.is_group_work && userGroup ? { groupId: userGroup.id } : { userId: currentUser?.id }),
+        assignment_id: assignmentId,
+        submission_link: submissionLink.trim(),
+        ...(assignment.is_group_work && userGroup ? { group_id: userGroup.id } : { user_id: currentUser?.id }),
       };
 
       if (submission) {
