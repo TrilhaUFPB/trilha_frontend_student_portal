@@ -4,8 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllRoles } from "@/utils/api";
-
-interface Role { id: number; name: string }
+import { Role } from "@/types/interfaces";
 
 export default function AdminRolesPage() {
   const { user, loading } = useAuth();
@@ -56,12 +55,11 @@ export default function AdminRolesPage() {
                   <p className="font-medium text-gray-900">{r.name}</p>
                   <p className="text-sm text-gray-500">ID: {r.id}</p>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  r.name === "admin" ? "bg-red-100 text-red-800" :
-                  r.name === "teacher" ? "bg-blue-100 text-blue-800" :
-                  r.name === "student" ? "bg-green-100 text-green-800" :
-                  "bg-orange-100 text-orange-800"
-                }`}>{r.name}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${r.name === "admin" ? "bg-red-100 text-red-800" :
+                    r.name === "teacher" ? "bg-blue-100 text-blue-800" :
+                      r.name === "student" ? "bg-green-100 text-green-800" :
+                        "bg-orange-100 text-orange-800"
+                  }`}>{r.name}</span>
               </li>
             ))}
             {roles.length === 0 && (

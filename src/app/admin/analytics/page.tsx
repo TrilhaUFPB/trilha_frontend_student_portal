@@ -4,19 +4,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { fetchAllAssignments, fetchAllSubmissions, fetchAllUsers, fetchAllGroups } from "@/utils/api";
-
-interface Assignment { id: number; is_group_work: boolean; due_date?: string }
-interface Submission { id: number; assignment_id: number; status: string; submitted_at: string }
-interface User { id: number; role: { name: string } }
-interface Group { id: number; assignment_id: number }
+import {AssignmentAnalytics, SubmissionAnalytics, UserAnalytics, GroupAnalytics} from "@/types/interfaces"
 
 export default function AdminAnalyticsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentAnalytics[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionAnalytics[]>([]);
+  const [users, setUsers] = useState<UserAnalytics[]>([]);
+  const [groups, setGroups] = useState<GroupAnalytics[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -36,10 +32,10 @@ export default function AdminAnalyticsPage() {
           fetchAllUsers(),
           fetchAllGroups(),
         ]);
-        setAssignments(as as Assignment[]);
-        setSubmissions(ss as Submission[]);
-        setUsers(us as User[]);
-        setGroups(gs as Group[]);
+        setAssignments(as as AssignmentAnalytics[]);
+        setSubmissions(ss as SubmissionAnalytics[]);
+        setUsers(us as UserAnalytics[]);
+        setGroups(gs as GroupAnalytics[]);
       } finally {
         setLoadingData(false);
       }

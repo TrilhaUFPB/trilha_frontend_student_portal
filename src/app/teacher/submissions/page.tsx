@@ -5,21 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllAssignments, fetchAllSubmissions } from "@/utils/api";
 import Link from "next/link";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date?: string;
-  is_group_work: boolean;
-}
-
-interface Submission { id: number; assignment_id: number }
+import { GroupAnalytics, AssignmentSubmission } from "@/types/interfaces";
 
 export default function TeacherSubmissionsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentSubmission[]>([]);
   const [submissionCounts, setSubmissionCounts] = useState<Record<number, number>>({});
   const [loadingData, setLoadingData] = useState(true);
 
@@ -38,9 +29,9 @@ export default function TeacherSubmissionsPage() {
           fetchAllAssignments(),
           fetchAllSubmissions(),
         ]);
-        setAssignments(as as Assignment[]);
+        setAssignments(as as AssignmentSubmission[]);
         const counts: Record<number, number> = {};
-        (subs as Submission[]).forEach((s) => {
+        (subs as GroupAnalytics[]).forEach((s) => {
           counts[s.assignment_id] = (counts[s.assignment_id] || 0) + 1;
         });
         setSubmissionCounts(counts);

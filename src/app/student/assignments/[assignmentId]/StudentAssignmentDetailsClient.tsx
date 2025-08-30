@@ -14,83 +14,23 @@ import {
   createSubmission,
   updateSubmission,
 } from "@/utils/api";
-
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  githubLink: string;
-  dueDate: string;
-  isGroupWork: boolean;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface Group {
-  id: number;
-  name: string;
-  assignmentId: number;
-  maxMembers: number;
-}
-
-interface GroupMember {
-  id: number;
-  groupId: number;
-  userId: number;
-  joinedAt: string;
-  user: User;
-}
-
-interface Submission {
-  id: number;
-  assignmentId: number;
-  groupId?: number;
-  userId?: number;
-  submissionLink: string;
-  submittedAt: string;
-  version: number;
-  status: string;
-}
-
-interface Comment {
-  id: number;
-  submissionId: number;
-  userId: number;
-  comment: string;
-  commentedAt: string;
-  user: User;
-}
-
-interface Rating {
-  id: number;
-  submissionId: number;
-  raterId: number;
-  score: number;
-  feedback: string;
-  ratedAt: string;
-  rater: User;
-}
+import { AssignmentReview3, Rating2, GroupStudent, CommentStudent, GroupMember3, UserReview, SubmissionReview2} from "@/types/interfaces";
 
 interface Props {
-  assignment: Assignment;
+  assignment: AssignmentReview3;
   assignmentId: number;
 }
 
 export default function StudentAssignmentDetailsClient({ assignment, assignmentId }: Props) {
   const router = useRouter();
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [submission, setSubmission] = useState<Submission | null>(null);
-  const [userGroup, setUserGroup] = useState<Group | null>(null);
-  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
-  const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserReview | null>(null);
+  const [submission, setSubmission] = useState<SubmissionReview2 | null>(null);
+  const [userGroup, setUserGroup] = useState<GroupStudent | null>(null);
+  const [groupMembers, setGroupMembers] = useState<GroupMember3[]>([]);
+  const [availableGroups, setAvailableGroups] = useState<GroupStudent[]>([]);
+  const [comments, setComments] = useState<CommentStudent[]>([]);
+  const [ratings, setRatings] = useState<Rating2[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,22 +49,22 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
       setError(null);
 
       // Fetch current user
-      const currentUserData = await fetchCurrentUser() as User;
+      const currentUserData = await fetchCurrentUser() as UserReview;
       setCurrentUser(currentUserData);
 
       // Fetch user's submission
-      let submissionData: Submission | null = null;
-      if (assignment.isGroupWork) {
+      let submissionData: SubmissionReview2 | null = null;
+      if (assignment.is_group_work) {
         // For group work, check if user has a group first
         try {
           const groupData = await fetchUserGroupForAssignment(assignmentId, currentUserData.id);
           if (groupData) {
-            setUserGroup(groupData as Group);
+            setUserGroup(groupData as GroupStudent);
             // Fetch group members
             const membersData = await fetchGroupMembersByGroupId(groupData.id);
-            setGroupMembers(membersData as GroupMember[]);
+            setGroupMembers(membersData as GroupMember3[]);
             // Fetch group submission
-            submissionData = await fetchGroupSubmissionForAssignment(assignmentId, groupData.id) as Submission;
+            submissionData = await fetchGroupSubmissionForAssignment(assignmentId, groupData.id) as SubmissionReview2;
           }
         } catch (err) {
           // User doesn't have a group yet
@@ -133,11 +73,11 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
         
         // Fetch available groups
         const groupsData = await fetchGroupsByAssignmentId(assignmentId);
-        setAvailableGroups(groupsData as Group[]);
+        setAvailableGroups(groupsData as GroupStudent[]);
       } else {
         // For individual work, fetch user's submission
         try {
-          submissionData = await fetchUserSubmissionForAssignment(assignmentId, currentUserData.id) as Submission;
+          submissionData = await fetchUserSubmissionForAssignment(assignmentId, currentUserData.id) as SubmissionReview2;
         } catch (err) {
           // User hasn't submitted yet
           console.log("User hasn't submitted yet");
@@ -154,8 +94,8 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           fetchRatingsBySubmissionId(submissionData.id),
         ]);
         
-        setComments(commentsData as Comment[]);
-        setRatings(ratingsData as Rating[]);
+        setComments(commentsData as CommentStudent[]);
+        setRatings(ratingsData as Rating2[]);
       }
     } catch (err) {
       setError("Failed to load assignment data");
@@ -174,9 +114,9 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
       setError(null);
 
       const submissionData = {
-        assignmentId,
-        submissionLink: submissionLink.trim(),
-        ...(assignment.isGroupWork && userGroup ? { groupId: userGroup.id } : { userId: currentUser?.id }),
+        assignment_id: assignmentId,
+        submission_link: submissionLink.trim(),
+        ...(assignment.is_group_work && userGroup ? { group_id: userGroup.id } : { user_id: currentUser?.id }),
       };
 
       if (submission) {
@@ -201,7 +141,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
   const getSubmissionStatus = () => {
     if (!submission) return "Not Submitted";
     
-    if (assignment.isGroupWork && !userGroup) return "No Group";
+    if (assignment.is_group_work && !userGroup) return "No Group";
     
     return submission.status === "submitted" ? "Submitted" : submission.status;
   };
@@ -216,8 +156,8 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
     }
   };
 
-  const isOverdue = new Date(assignment.dueDate) < new Date();
-  const canSubmit = assignment.isGroupWork ? userGroup !== null : true;
+  const isOverdue = new Date(assignment.due_date) < new Date();
+  const canSubmit = assignment.is_group_work ? userGroup !== null : true;
 
   if (loading) {
     return (
@@ -252,11 +192,11 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
           <div className="flex gap-2">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              assignment.isGroupWork 
+              assignment.is_group_work 
                 ? 'bg-purple-100 text-purple-800' 
                 : 'bg-blue-100 text-blue-800'
             }`}>
-              {assignment.isGroupWork ? 'Group Assignment' : 'Individual Assignment'}
+              {assignment.is_group_work ? 'Group Assignment' : 'Individual Assignment'}
             </span>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor()}`}>
               {getSubmissionStatus()}
@@ -264,7 +204,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               isOverdue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
             }`}>
-              Due: {new Date(assignment.dueDate).toLocaleDateString()}
+              Due: {new Date(assignment.due_date).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -278,7 +218,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
             Back to Assignments
           </button>
           <a
-            href={assignment.githubLink}
+            href={assignment.github_link}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -297,7 +237,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           </div>
         )}
 
-        {assignment.isGroupWork && !userGroup && (
+        {assignment.is_group_work && !userGroup && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-center gap-2">
               <span className="text-yellow-600">⚠️</span>
@@ -330,7 +270,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           >
             {submission ? 'Update Submission' : 'Submit Assignment'}
           </button>
-          {assignment.isGroupWork && (
+          {assignment.is_group_work && (
             <button
               onClick={() => setActiveTab('group')}
               className={`px-6 py-3 font-medium text-sm ${
@@ -369,19 +309,19 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Assignment Link</h3>
                 <a
-                  href={assignment.githubLink}
+                  href={assignment.github_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 break-all"
                 >
-                  {assignment.githubLink}
+                  {assignment.github_link}
                 </a>
               </div>
 
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Due Date</h3>
                 <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-green-600'}`}>
-                  {new Date(assignment.dueDate).toLocaleDateString()} at {new Date(assignment.dueDate).toLocaleTimeString()}
+                  {new Date(assignment.due_date).toLocaleDateString()} at {new Date(assignment.due_date).toLocaleTimeString()}
                 </p>
               </div>
 
@@ -429,7 +369,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                   </p>
                 </div>
 
-                {!canSubmit && assignment.isGroupWork && (
+                {!canSubmit && assignment.is_group_work && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-yellow-800">
                       You need to join a group before you can submit this assignment.
@@ -449,7 +389,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           )}
 
           {/* Group Management Tab */}
-          {activeTab === 'group' && assignment.isGroupWork && (
+          {activeTab === 'group' && assignment.is_group_work && (
             <div className="space-y-4">
               {userGroup ? (
                 <div>
@@ -461,7 +401,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                         <li key={member.id} className="flex items-center justify-between">
                           <span className="text-gray-700">{member.user.name}</span>
                           <span className="text-sm text-gray-500">
-                            Joined: {new Date(member.joinedAt).toLocaleDateString()}
+                            Joined: {new Date(member.joined_at).toLocaleDateString()}
                           </span>
                         </li>
                       ))}
@@ -502,22 +442,22 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Ratings</h3>
                   <div className="space-y-4">
-                    {ratings.map((rating) => (
-                      <div key={rating.id} className="border border-gray-200 rounded-lg p-4">
+                    {ratings.map((rating2) => (
+                      <div key={rating2.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900">{rating.rater.name}</span>
+                            <span className="font-medium text-gray-900">{rating2.rater.name}</span>
                             <div className="flex items-center gap-1">
                               <span className="text-yellow-400">⭐</span>
-                              <span className="font-medium">{rating.score}/10</span>
+                              <span className="font-medium">{rating2.score}/10</span>
                             </div>
                           </div>
                           <span className="text-sm text-gray-500">
-                            {new Date(rating.ratedAt).toLocaleDateString()}
+                            {new Date(rating2.rated_at).toLocaleDateString()}
                           </span>
                         </div>
-                        {rating.feedback && (
-                          <p className="text-gray-700 mt-2">{rating.feedback}</p>
+                        {rating2.feedback && (
+                          <p className="text-gray-700 mt-2">{rating2.feedback}</p>
                         )}
                       </div>
                     ))}
@@ -535,7 +475,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium text-gray-900">{comment.user.name}</span>
                           <span className="text-sm text-gray-500">
-                            {new Date(comment.commentedAt).toLocaleDateString()}
+                            {new Date(comment.commented_at).toLocaleDateString()}
                           </span>
                         </div>
                         <p className="text-gray-700">{comment.comment}</p>

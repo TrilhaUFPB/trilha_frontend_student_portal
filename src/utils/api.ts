@@ -1,6 +1,6 @@
 import { getToken } from "./auth";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8080";
 
 export async function apiFetch<T>(
   url: string,
@@ -64,9 +64,9 @@ const mapAssignment = (a: RawAssignment) => ({
   id: a?.id ?? a?.ID,
   title: a?.title ?? a?.Title,
   description: a?.description ?? a?.Description ?? "",
-  due_date: a?.due_date ?? a?.DueDate ?? null,
-  is_group_work: a?.is_group_work ?? a?.IsGroupWork ?? false,
-  github_link: a?.github_link ?? a?.GithubLink ?? undefined,
+  due_date: a?.due_date ?? a?.due_date ?? null,
+  is_group_work: a?.is_group_work ?? a?.is_group_work ?? false,
+  github_link: a?.github_link ?? a?.github_link ?? undefined,
 });
 
 export async function fetchAllAssignments() {
@@ -77,8 +77,8 @@ export async function fetchAllAssignments() {
   return [];
 }
 
-export async function fetchAssignmentById(id: number) {
-  const data = await apiFetch(`${BACKEND_URL}/api/assignments/${id}`);
+export async function fetchAssignmentById(id: number, options: RequestInit = {}) {
+  const data = await apiFetch(`${BACKEND_URL}/api/assignments/${id}`, options);
   return mapAssignment(data);
 }
 

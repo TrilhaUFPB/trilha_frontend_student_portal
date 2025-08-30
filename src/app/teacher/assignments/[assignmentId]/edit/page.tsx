@@ -1,29 +1,26 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { 
-  fetchAssignmentById, 
+import React, { useEffect, useState } from "react";
+import {
+  fetchAssignmentById,
   updateAssignment,
   fetchAllSubmissions,
   fetchAllGroups
 } from "@/utils/api";
 import Link from "next/link";
+import { AssignmentTeacherDashboard } from "@/types/interfaces";
 
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-export default function EditAssignmentPage({ params }: { params: { assignmentId: string } }) {
+export default function EditAssignmentPage({
+  params: paramsPromise,
+}: {
+  params: Promise<{ assignmentId: string }>;
+}) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const params = React.use(paramsPromise);
   const assignmentId = parseInt(params.assignmentId);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -32,9 +29,9 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
     due_date: "",
     is_group_work: false
   });
-  
-  const [originalAssignment, setOriginalAssignment] = useState<Assignment | null>(null);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  const [originalAssignment, setOriginalAssignment] = useState<AssignmentTeacherDashboard | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
@@ -44,13 +41,13 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "teacher") {
+    } else if (!loading && user && user.role.name !== "teacher" && !loading && user && user.role.name !== "admin" ) {
       router.push("/");
     }
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user && user.role.name === "teacher") {
+    if (user && user.role.name === "teacher" || user && user.role.name === "admin") {
       loadAssignmentData();
     }
   }, [user, assignmentId]);
@@ -58,22 +55,22 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
   const loadAssignmentData = async () => {
     try {
       setLoadingData(true);
-      
+
       const [assignment, allSubmissions, allGroups] = await Promise.all([
         fetchAssignmentById(assignmentId),
         fetchAllSubmissions(),
         fetchAllGroups()
       ]);
-      
-      const assignmentData = assignment as Assignment;
+
+      const assignmentData = assignment as AssignmentTeacherDashboard;
       setOriginalAssignment(assignmentData);
-      
+
       // Check if assignment has submissions or groups
       const submissions = (allSubmissions as any[]).filter(s => s.assignment_id === assignmentId);
       const groups = (allGroups as any[]).filter(g => g.assignment_id === assignmentId);
       setHasSubmissions(submissions.length > 0);
       setHasGroups(groups.length > 0);
-      
+
       // Populate form data
       setFormData({
         title: assignmentData.title,
@@ -82,7 +79,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
         due_date: assignmentData.due_date ? new Date(assignmentData.due_date).toISOString().slice(0, 16) : "",
         is_group_work: assignmentData.is_group_work
       });
-      
+
     } catch (error) {
       console.error("Error loading assignment data:", error);
       router.push("/teacher/assignments");
@@ -92,8 +89,8 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
   };
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-    
+    const newErrors: { [key: string]: string } = {};
+
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
     } else if (formData.title.length < 3) {
@@ -101,7 +98,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
     } else if (formData.title.length > 100) {
       newErrors.title = "Title must be less than 100 characters";
     }
-    
+
     if (!formData.description.trim()) {
       newErrors.description = "Description is required";
     } else if (formData.description.length < 10) {
@@ -109,43 +106,43 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
     } else if (formData.description.length > 2000) {
       newErrors.description = "Description must be less than 2000 characters";
     }
-    
+
     if (formData.github_link && formData.github_link.trim()) {
       const githubRegex = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/;
       if (!githubRegex.test(formData.github_link.trim())) {
         newErrors.github_link = "Please enter a valid GitHub repository URL (e.g., https://github.com/username/repo)";
       }
     }
-    
+
     if (formData.due_date && formData.due_date.trim()) {
-      const dueDate = new Date(formData.due_date);
+      const due_date = new Date(formData.due_date);
       const now = new Date();
-      
-      if (isNaN(dueDate.getTime())) {
+
+      if (isNaN(due_date.getTime())) {
         newErrors.due_date = "Please enter a valid date";
       }
       // Allow past dates for editing (assignment might already be overdue)
     }
-    
+
     // Check if assignment type can be changed
     if (originalAssignment && formData.is_group_work !== originalAssignment.is_group_work) {
       if (hasSubmissions || hasGroups) {
         newErrors.is_group_work = "Cannot change assignment type after submissions or groups have been created";
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -157,13 +154,13 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const assignmentData = {
         title: formData.title.trim(),
@@ -172,12 +169,12 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
         due_date: formData.due_date ? new Date(formData.due_date).toISOString() : undefined,
         is_group_work: formData.is_group_work
       };
-      
+
       await updateAssignment(assignmentId, assignmentData);
-      
+
       // Redirect to assignments list with success message
       router.push("/teacher/assignments?updated=true");
-      
+
     } catch (error) {
       console.error("Error updating assignment:", error);
       setErrors({ submit: "Failed to update assignment. Please try again." });
@@ -193,25 +190,25 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
 
   const getDaysUntilDue = () => {
     if (!formData.due_date) return null;
-    const dueDate = new Date(formData.due_date);
+    const due_date = new Date(formData.due_date);
     const now = new Date();
-    const diffTime = dueDate.getTime() - now.getTime();
+    const diffTime = due_date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
   const hasChanges = () => {
     if (!originalAssignment) return false;
-    
-    const originalDueDate = originalAssignment.due_date 
+
+    const originaldue_date = originalAssignment.due_date
       ? new Date(originalAssignment.due_date).toISOString().slice(0, 16)
       : "";
-    
+
     return (
       formData.title !== originalAssignment.title ||
       formData.description !== originalAssignment.description ||
       formData.github_link !== (originalAssignment.github_link || "") ||
-      formData.due_date !== originalDueDate ||
+      formData.due_date !== originaldue_date ||
       formData.is_group_work !== originalAssignment.is_group_work
     );
   };
@@ -275,7 +272,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
                 <p className="text-yellow-700 text-sm">
                   This assignment has {hasSubmissions && `${hasSubmissions} submissions`}
                   {hasSubmissions && hasGroups && " and "}
-                  {hasGroups && `${hasGroups} groups`}. 
+                  {hasGroups && `${hasGroups} groups`}.
                   Some changes may affect existing student work.
                 </p>
               </div>
@@ -287,7 +284,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
           {/* Form Section */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-gray-800 mb-6">Assignment Details</h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title */}
               <div>
@@ -358,13 +355,12 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
                 />
                 {errors.due_date && <p className="text-red-600 text-sm mt-1">{errors.due_date}</p>}
                 {daysUntilDue !== null && (
-                  <p className={`text-sm mt-1 ${
-                    daysUntilDue < 0 ? 'text-red-600' : 
+                  <p className={`text-sm mt-1 ${daysUntilDue < 0 ? 'text-red-600' :
                     daysUntilDue <= 7 ? 'text-yellow-600' : 'text-green-600'
-                  }`}>
+                    }`}>
                     {daysUntilDue < 0 ? `Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) !== 1 ? 's' : ''}` :
-                     daysUntilDue === 0 ? 'Due today' :
-                     `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`}
+                      daysUntilDue === 0 ? 'Due today' :
+                        `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`}
                   </p>
                 )}
               </div>
@@ -444,7 +440,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
           {showPreview && (
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Assignment Preview</h2>
-              
+
               <div className="space-y-4">
                 {/* Preview Header */}
                 <div>
@@ -452,22 +448,20 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
                     <h3 className="text-lg font-semibold text-gray-800">
                       {formData.title || "Assignment Title"}
                     </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      formData.is_group_work 
-                        ? "bg-purple-100 text-purple-800" 
-                        : "bg-blue-100 text-blue-800"
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${formData.is_group_work
+                      ? "bg-purple-100 text-purple-800"
+                      : "bg-blue-100 text-blue-800"
+                      }`}>
                       {formData.is_group_work ? "Group Work" : "Individual"}
                     </span>
                     {daysUntilDue !== null && (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                        daysUntilDue < 0 ? "bg-red-100 text-red-800 border-red-200" :
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${daysUntilDue < 0 ? "bg-red-100 text-red-800 border-red-200" :
                         daysUntilDue <= 3 ? "bg-yellow-100 text-yellow-800 border-yellow-200" :
-                        "bg-green-100 text-green-800 border-green-200"
-                      }`}>
-                        {daysUntilDue < 0 ? "Overdue" : 
-                         daysUntilDue === 0 ? "Due Today" :
-                         `Due in ${daysUntilDue} days`}
+                          "bg-green-100 text-green-800 border-green-200"
+                        }`}>
+                        {daysUntilDue < 0 ? "Overdue" :
+                          daysUntilDue === 0 ? "Due Today" :
+                            `Due in ${daysUntilDue} days`}
                       </span>
                     )}
                   </div>
@@ -490,7 +484,7 @@ export default function EditAssignmentPage({ params }: { params: { assignmentId:
                     <p><strong>Due Date:</strong> {formatPreviewDate(formData.due_date)}</p>
                     <p><strong>Type:</strong> {formData.is_group_work ? "Group Assignment" : "Individual Assignment"}</p>
                     {formData.github_link && (
-                      <p><strong>Reference:</strong> 
+                      <p><strong>Reference:</strong>
                         <a href={formData.github_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
                           GitHub Repository →
                         </a>
