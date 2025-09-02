@@ -4,19 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllRoles, createUser } from "@/utils/api";
 import Link from "next/link";
-
-interface Role {
-  id: number;
-  name: string;
-}
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role_id: number;
-}
+import { Role, FormData } from "@/types/interfaces";
 
 export default function AdminCreateUserPage() {
   const { user, loading } = useAuth();

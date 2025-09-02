@@ -5,37 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchGroupById, fetchGroupMembersByGroupId, fetchAssignmentById } from "@/utils/api";
 import Link from "next/link";
+import { GroupGroups, AssignmentGroups, GroupMember2 } from "@/types/interfaces";
 
-interface Group {
-  id: number;
-  assignment_id: number;
-  name: string;
-  leader_id?: number;
-  created_at: string;
-}
-
-interface GroupMember {
-  group_id: number;
-  user_id: number;
-  joined_at: string;
-  user?: { id: number; name: string; email: string };
-}
-
-interface Assignment {
-  id: number;
-  title: string;
-  due_date?: string;
-  is_group_work: boolean;
-}
 
 export default function StudentGroupDetailsPage({ params }: { params: { groupId: string } }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const groupId = Number(params.groupId);
 
-  const [group, setGroup] = useState<Group | null>(null);
-  const [members, setMembers] = useState<GroupMember[]>([]);
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [group, setGroup] = useState<GroupGroups | null>(null);
+  const [members, setMembers] = useState<GroupMember2[]>([]);
+  const [assignment, setAssignment] = useState<AssignmentGroups | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -49,12 +29,12 @@ export default function StudentGroupDetailsPage({ params }: { params: { groupId:
     const load = async () => {
       try {
         setLoadingData(true);
-        const g = await fetchGroupById(groupId) as Group;
+        const g = await fetchGroupById(groupId) as GroupGroups;
         setGroup(g);
-        const m = await fetchGroupMembersByGroupId(groupId) as GroupMember[];
+        const m = await fetchGroupMembersByGroupId(groupId) as GroupMember2[];
         setMembers(m);
         if (g?.assignment_id) {
-          const a = await fetchAssignmentById(g.assignment_id) as Assignment;
+          const a = await fetchAssignmentById(g.assignment_id) as AssignmentGroups;
           setAssignment(a);
         }
       } catch (e) {

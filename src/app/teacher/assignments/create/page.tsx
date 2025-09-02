@@ -61,12 +61,12 @@ export default function CreateAssignmentPage() {
     }
     
     if (formData.due_date && formData.due_date.trim()) {
-      const dueDate = new Date(formData.due_date);
+      const due_date = new Date(formData.due_date);
       const now = new Date();
       
-      if (isNaN(dueDate.getTime())) {
+      if (isNaN(due_date.getTime())) {
         newErrors.due_date = "Please enter a valid date";
-      } else if (dueDate <= now) {
+      } else if (due_date <= now) {
         newErrors.due_date = "Due date must be in the future";
       }
     }
@@ -130,9 +130,9 @@ export default function CreateAssignmentPage() {
 
   const getDaysUntilDue = () => {
     if (!formData.due_date) return null;
-    const dueDate = new Date(formData.due_date);
+    const due_date = new Date(formData.due_date);
     const now = new Date();
-    const diffTime = dueDate.getTime() - now.getTime();
+    const diffTime = due_date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };

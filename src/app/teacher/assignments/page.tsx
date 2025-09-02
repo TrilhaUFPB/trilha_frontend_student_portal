@@ -9,36 +9,9 @@ import {
   deleteAssignment
 } from "@/utils/api";
 import Link from "next/link";
+import { AssignmentTeacherDashboard, SubmissionTeacher, Group } from "@/types/interfaces";
 
-interface Assignment {
-  id: number;
-  title: string;
-  description: string;
-  due_date: string;
-  is_group_work: boolean;
-  github_link?: string;
-}
-
-interface Submission {
-  id: number;
-  assignment_id: number;
-  user_id?: number;
-  group_id?: number;
-  submission_link: string;
-  submitted_at: string;
-  version: number;
-  status: string;
-}
-
-interface Group {
-  id: number;
-  assignment_id: number;
-  name: string;
-  leader_id: number;
-  created_at: string;
-}
-
-interface AssignmentWithStats extends Assignment {
+interface AssignmentWithStats extends AssignmentTeacherDashboard {
   submissionCount: number;
   groupCount: number;
   isOverdue: boolean;
@@ -81,14 +54,14 @@ export default function TeacherAssignmentsPage() {
       ]);
       
       // Enrich assignments with statistics
-      const enrichedAssignments: AssignmentWithStats[] = (allAssignments as Assignment[]).map((assignment) => {
-        const submissions = (allSubmissions as Submission[]).filter(s => s.assignment_id === assignment.id);
+      const enrichedAssignments: AssignmentWithStats[] = (allAssignments as AssignmentTeacherDashboard[]).map((assignment) => {
+        const submissions = (allSubmissions as SubmissionTeacher[]).filter(s => s.assignment_id === assignment.id);
         const groups = (allGroups as Group[]).filter(g => g.assignment_id === assignment.id);
         
         const now = new Date();
-        const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
-        const isOverdue = dueDate ? dueDate < now : false;
-        const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+        const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
+        const isOverdue = due_date ? due_date < now : false;
+        const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
         
         return {
           ...assignment,

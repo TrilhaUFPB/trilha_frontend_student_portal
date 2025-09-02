@@ -4,21 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchAllUsers, fetchAllRoles, updateUser } from "@/utils/api";
 import Link from "next/link";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role_id: number;
-  role: { id: number; name: string };
-  created_at: string;
-  updated_at: string;
-}
-
-interface Role {
-  id: number;
-  name: string;
-}
+import { User, Role } from "@/types/interfaces";
 
 export default function AdminPendingUsersPage() {
   const { user, loading } = useAuth();
