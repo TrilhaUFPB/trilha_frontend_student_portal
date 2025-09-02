@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                           </span>
                         )}
                         <Link
-                          href={`/admin/assignments/${assignment.id}`}
+                          href={`/student/assignments/${assignment.id}`}
                           className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
                         >
                           View
