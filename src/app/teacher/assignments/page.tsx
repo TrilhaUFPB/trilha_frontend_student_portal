@@ -27,18 +27,19 @@ export default function TeacherAssignmentsPage() {
   const [filter, setFilter] = useState<"all" | "individual" | "group" | "overdue" | "upcoming">("all");
   const [sortBy, setSortBy] = useState<"date" | "title" | "submissions" | "due_date">("due_date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [deleteConfirm, setDeleteConfirm] = useState<{id: number, title: string} | null>(null);
-
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: number, title: string } | null>(null);
+  const allowedRoles = ["teacher", "admin"]
+  
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "teacher") {
+    } else if (!loading && user && user.role?.name && !allowedRoles.includes(user.role.name)) {
       router.push("/");
     }
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user && user.role.name === "teacher") {
+    if (user && user.role.name &&allowedRoles.includes(user.role.name)) {
       loadAssignmentsData();
     }
   }, [user]);
