@@ -8,15 +8,29 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const token = getToken();
   const headers = {
-    ...(options.headers || {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     "Content-Type": "application/json",
+    ...options.headers,
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(`Request failed (${response.status}): ${errorMessage}`);
   }
-  return res.json();
+
+  const responseText = await response.text();
+  
+  if (!responseText.trim()) {
+    return null as unknown as T;
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return responseText as unknown as T;
+  }
 }
 
 // =============================================================================
