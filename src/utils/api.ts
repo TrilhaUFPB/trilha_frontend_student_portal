@@ -151,13 +151,26 @@ export async function deleteSubmission(id: number) {
 // =============================================================================
 // GROUP MANAGEMENT
 // =============================================================================
+const mapGroup = (g: any) => ({
+  id: g?.id ?? g?.ID,
+  assignment_id: g?.assignment_id ?? g?.AssignmentID ?? 0,
+  name: g?.name ?? g?.Name ?? "",
+  leader_id: g?.leader_id ?? g?.LeaderID ?? null,
+  created_at: g?.created_at ?? g?.CreatedAt ?? "",
+  updated_at: g?.updated_at ?? g?.UpdatedAt ?? "",
+});
 
 export async function fetchAllGroups() {
-  return apiFetch(`${BACKEND_URL}/api/groups`);
+  const data = await apiFetch(`${BACKEND_URL}/api/groups`);
+  if (Array.isArray(data)) {
+    return data.map(mapGroup);
+  }
+  return [];
 }
 
 export async function fetchGroupById(id: number) {
-  return apiFetch(`${BACKEND_URL}/api/groups/${id}`);
+  const data = await apiFetch(`${BACKEND_URL}/api/groups/${id}`);
+  return mapGroup(data);
 }
 
 export async function createGroup(groupData: any) {
@@ -184,8 +197,19 @@ export async function deleteGroup(id: number) {
 // GROUP MEMBER MANAGEMENT
 // =============================================================================
 
+const mapGroupMember = (m: any) => ({
+  id: m?.id ?? m?.ID,
+  group_id: m?.group_id ?? m?.GroupID ?? 0,
+  user_id: m?.user_id ?? m?.UserID ?? 0,
+  created_at: m?.created_at ?? m?.CreatedAt ?? "",
+});
+
 export async function fetchAllGroupMembers() {
-  return apiFetch(`${BACKEND_URL}/api/group_members`);
+  const data = await apiFetch(`${BACKEND_URL}/api/group_members`);
+  if (Array.isArray(data)) {
+    return data.map(mapGroupMember);
+  }
+  return [];
 }
 
 export async function addGroupMember(groupMemberData: any) {
