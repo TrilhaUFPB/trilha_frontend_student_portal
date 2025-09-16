@@ -171,12 +171,6 @@ export default function StudentGroupsPage() {
       
       const newGroup = await createGroup(groupData);
       
-      // Add the creator as the first member
-      await addGroupMember({
-        group_id: (newGroup as any).id,
-        user_id: user!.id,
-      });
-      
       setGroupName("");
       setSelectedAssignmentId(null);
       setGroupError("");
