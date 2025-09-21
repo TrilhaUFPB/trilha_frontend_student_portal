@@ -124,6 +124,12 @@ export default function AdminDashboard() {
                 Manage All Users
               </Link>
               <Link
+                href="/admin/courses"
+                className="block w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+              >
+                Manage All Courses
+              </Link>
+              <Link
                 href="/admin/users/pending"
                 className="block w-full bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors text-center"
               >
