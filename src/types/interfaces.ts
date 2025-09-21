@@ -260,8 +260,8 @@ export type Course =  {
   id: number;
   title: string;
   description: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
   videos: Video[]
 }
 
@@ -271,6 +271,6 @@ export type Video = {
   description: string;
   url: string;
   CourseId: number;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
