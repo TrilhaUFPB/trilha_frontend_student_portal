@@ -1,66 +1,58 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/context/AuthContext";
-import { Course, Video } from "@/types/interfaces";
-import { fetchCoursesById } from "@/utils/api";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Course } from "@/types/interfaces";
+import { fetchCoursesById } from "@/utils/api";
 
 export default function CoursePage() {
-    const router = useRouter();
-    const params = useParams();
-    const { user, loading } = useAuth();
-    const courseId = Number(params.courseId);
-    const [loadingData, setLoadingData] = useState(true);
-    const [course, setCourse] = useState<Course | null>(null);
+  const params = useParams();
+  const courseId = Number(params.courseId); // get course ID from URL
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!loading) {
-            if (!user) router.push("/login");
-            else if (user.role.name !== "admin") router.push("/");
-        }
-    }, [loading, user, router]);
+  useEffect(() => {
+    async function loadCourse() {
+      try {
+        const data = await fetchCoursesById(courseId) as Course;
+        setCourse(data);
+      } catch (err) {
+        console.error("Error fetching course:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    useEffect(() => {
-        const loadCourses = async () => {
-            try {
-                setLoadingData(true);
-                const data = await fetchCoursesById(courseId); // your courses API
-                setCourse(data as Course); // typecast to your Course type
-            } catch (e) {
-                console.error("Failed to load courses", e);
-            } finally {
-                setLoadingData(false);
-            }
-        };
+    loadCourse();
+  }, [courseId]);
 
-        if (user?.role?.name === "admin") {
-            loadCourses();
-        }
-    }, [user]);
+  if (loading) return <div>Loading...</div>;
+  if (!course) return <div>Course not found.</div>;
 
-    if (loadingData) return <p>Loading</p>;
-    if (!course) return <p>Course not found</p>;
+  return (
+    <main className="flex-wrap text-center items-center align-middle">
+      <div className="p-6">
+        <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
+        <p className="mb-6">{course.description}</p>
 
-    return (
-        <div>
-            <div>
-                <h2>{course.title}</h2>
-                <p>{course.description}</p>
-
-                <h3>Videos</h3>
-                {course.videos.length > 0 ? (
-                    course.videos.map((video) => (
-                        <div key={video.id}>
-                            <p><strong>{video.title}</strong></p>
-                            <p>{video.description}</p>
-                            <iframe width="560" height="315" src={`https://www.youtube.com/embed/${video.url}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
-                        </div>
-                    ))
-                ) : (
-                    <p>No videos available.</p>
-                )}
-            </div>
-        </div>
-    )
+        {/* Example: if course has videos */}
+        {course.videos?.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">Videos</h2>
+            <ul className="list-disc list-inside">
+              {course.videos.map((video) => (
+                <li key={video.id} className="flex-wrap align-middle text-center items-center">
+                  <div className="font-bold text-3xl">{video.title}</div>
+                  <div className="text-xl">{video.description}</div>
+                  <div className="flex items-center justify-center h-screen">
+                    <iframe className="w-full h-full m-32" src={`https://www.youtube.com/embed/${video.url}`}></iframe>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }
