@@ -1,27 +1,6 @@
 "use client"
 
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
 export default function CoursesPage() {
-    const allowedRoles = ["admin", "teacher"]
-    const { user, loading } = useAuth();
-    const router = useRouter();
-    useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    } else if (!loading && user && !allowedRoles.includes(user.role.name ?? "")) {
-      router.push("/");
-    }
-  }, [loading, user, router]);
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push("/login");
-        } else if (!loading && user && !allowedRoles.includes(user.role.name ?? "")) {
-            router.push("/");
-        }
-    }, [loading, user, router]);
 
     return (
         <main className="flex-wrap text-center mt-5">

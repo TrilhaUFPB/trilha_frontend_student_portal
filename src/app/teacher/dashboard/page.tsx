@@ -149,6 +149,12 @@ export default function TeacherDashboard() {
               >
                 Pending Approvals
               </Link>
+              <Link
+                href="/teacher/courses"
+                className="block w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+              >
+                All Courses
+              </Link>
             </div>
           </div>
         </div>

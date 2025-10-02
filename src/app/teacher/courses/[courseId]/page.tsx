@@ -14,10 +14,11 @@ export default function CoursePage() {
   const courseId = Number(params.courseId); // get course ID from URL
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const allowedRoles = ["admin", "teacher"]
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "admin") {
+    } else if (!loading && user && !allowedRoles.includes(user.role.name ?? "")) {
       router.push("/");
     }
   }, [loading, user, router]);
@@ -49,8 +50,6 @@ export default function CoursePage() {
           <Link href={`/teacher/courses/${courseId}/edit`}><h2 className="text-xl font-semibold bg-gray-400 p-2 rounded-xl">Edit</h2></Link>
         </div>
         <p className="mb-6">{course.description}</p>
-
-        {/* Example: if course has videos */}
         {course.videos?.length > 0 && (
           <div>
             <h2 className="text-2xl font-semibold mb-2">Videos</h2>

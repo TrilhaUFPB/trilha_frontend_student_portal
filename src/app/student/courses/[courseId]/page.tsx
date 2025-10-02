@@ -1,26 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Course } from "@/types/interfaces";
 import { fetchCoursesById } from "@/utils/api";
-import { useAuth } from "@/context/AuthContext";
-import Link from "next/link";
 
 export default function CoursePage() {
   const params = useParams();
-  const { user } = useAuth();
-  const router = useRouter();
   const courseId = Number(params.courseId); // get course ID from URL
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    } else if (!loading && user && user.role.name !== "admin") {
-      router.push("/");
-    }
-  }, [loading, user, router]);
 
   useEffect(() => {
     async function loadCourse() {
@@ -43,11 +32,7 @@ export default function CoursePage() {
   return (
     <main className="flex-wrap text-center items-center align-middle">
       <div className="p-6">
-        <div className="flex justify-between">
-          <a href=""></a>
-          <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
-          <Link href={`/teacher/courses/${courseId}/edit`}><h2 className="text-xl font-semibold bg-gray-400 p-2 rounded-xl">Edit</h2></Link>
-        </div>
+        <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
         <p className="mb-6">{course.description}</p>
 
         {/* Example: if course has videos */}
