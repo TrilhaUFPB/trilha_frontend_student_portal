@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Course, Video } from "@/types/interfaces";
 import { useAuth } from "@/context/AuthContext";
-import { fetchCoursesById, updateCourses, updateVideos, deleteVideos } from "@/utils/api";
+import { fetchCoursesById, updateCourses, updateVideos, deleteVideos, fetchAllCourses } from "@/utils/api";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -14,10 +14,16 @@ export default function EditCoursePage() {
   const [loadingData, setLoadingData] = useState(true);
   const [course, setCourse] = useState<Course | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
-  
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+
   // Inline video editing state
   const [editingVideoId, setEditingVideoId] = useState<number | null>(null);
-  const [editingVideoData, setEditingVideoData] = useState<{ title: string; description: string }>({ title: '', description: '' });
+  const [editingVideoData, setEditingVideoData] = useState<{ title: string; description: string; CourseId: number; url: string }>({
+    title: '',
+    description: '',
+    CourseId: 0,
+    url: ''
+  });
 
   // Auth check
   useEffect(() => {
@@ -35,8 +41,17 @@ export default function EditCoursePage() {
       try {
         setLoadingData(true);
         const data = await fetchCoursesById(courseId) as Course;
+
+        const normalizedVideos = (data.videos ?? []).map(v => ({
+          ...v,
+          CourseId: (v as any).CourseId ?? (v as any).courseid ?? 0, // <-- normalize field
+        }));
+
+        console.log("Videos loaded:", normalizedVideos);
+
         setCourse(data);
-        setVideos(data.videos ?? []);
+        setVideos(normalizedVideos);
+
       } catch (e) {
         console.error("Failed to load course", e);
       } finally {
@@ -46,6 +61,19 @@ export default function EditCoursePage() {
 
     if (user) loadCourse();
   }, [user, courseId]);
+
+  useEffect(() => {
+    const loadAllCourses = async () => {
+      try {
+        const courses = (await fetchAllCourses()) as Course[];
+        setAllCourses(courses);
+      } catch (e) {
+        console.error("Failed to load all courses", e);
+      }
+    };
+
+    loadAllCourses(); // call the async function
+  }, []);
 
   // Course input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -60,14 +88,15 @@ export default function EditCoursePage() {
     if (!course) return;
 
     try {
-        const courseData = {
-            id: course.id,
-            title: course.title,
-            description: course.description
-        }
-        
-        await updateCourses(courseId, courseData);
-        router.push(`/teacher/courses/${courseId}`);
+      const courseData = {
+        title: course.title,
+        description: course.description
+      }
+
+      console.log("Sending course update:", { courseId, courseData });
+
+      await updateCourses(courseId, courseData);
+      router.push(`/teacher/courses/${courseId}`);
     } catch (e) {
       console.error("Failed to update course", e);
       alert("Failed to update course. Please try again.");
@@ -77,7 +106,12 @@ export default function EditCoursePage() {
   // Start editing a video
   const startEditing = (video: Video) => {
     setEditingVideoId(video.id);
-    setEditingVideoData({ title: video.title, description: video.description });
+    setEditingVideoData({
+      title: video.title,
+      description: video.description,
+      CourseId: video.CourseId,
+      url: video.url ?? ""
+    });
   };
 
   // Handle input change for video
@@ -92,17 +126,20 @@ export default function EditCoursePage() {
     if (!video) return
 
     const payload = {
-        title: editingVideoData.title,
-        description: editingVideoData.description,
-        courseid: video.CourseId  // Use the correct field name from the domain model
+      title: editingVideoData.title,
+      description: editingVideoData.description,
+      CourseId: editingVideoData.CourseId,
+      url: editingVideoData.url ?? ""
     }
 
+    console.log("Sending video update:", { videoId, payload });
+
     try {
-        await updateVideos(videoId, payload);
-        setVideos(videos.map(v => v.id === videoId ? {...v, ...editingVideoData}: v ))
-        setEditingVideoId(null)
+      await updateVideos(videoId, payload);
+      setVideos(videos.map(v => v.id === videoId ? { ...v, ...editingVideoData } : v))
+      setEditingVideoId(null)
     } catch (e) {
-        console.error("Failed to update video", e)
+      console.error("Failed to update video", e)
     }
   };
 
@@ -125,18 +162,6 @@ export default function EditCoursePage() {
 
       {/* Edit Course Form */}
       <form onSubmit={handleUpdateCourse} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Course ID</label>
-          <input
-            type="number"
-            name="id"
-            value={course.id}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-
         <div>
           <label className="block text-sm font-medium">Title</label>
           <input
@@ -189,6 +214,27 @@ export default function EditCoursePage() {
                       onChange={handleVideoChange}
                       className="border p-1 rounded w-full"
                     />
+                    <input
+                      type="text"
+                      name="url"
+                      value={editingVideoData.url}
+                      onChange={handleVideoChange}
+                      className="border p-1 rounded w-full"
+                      placeholder="Video URL"
+                    />
+                    <label className="block text-sm font-medium">Course</label>
+                    <select
+                      name="CourseId"
+                      value={editingVideoData.CourseId}
+                      onChange={(e) => setEditingVideoData(prev => ({ ...prev, CourseId: Number(e.target.value) }))}
+                      className="border p-1 rounded w-full"
+                    >
+                      {allCourses.map(course => (
+                        <option key={course.id} value={course.id}>
+                          {course.title}
+                        </option>
+                      ))}
+                    </select>
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleSaveVideo(video.id)}
