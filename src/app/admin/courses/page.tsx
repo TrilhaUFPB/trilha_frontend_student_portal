@@ -15,13 +15,6 @@ export default function CoursesPage() {
       router.push("/");
     }
   }, [loading, user, router]);
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push("/login");
-        } else if (!loading && user && !allowedRoles.includes(user.role.name ?? "")) {
-            router.push("/");
-        }
-    }, [loading, user, router]);
 
     return (
         <main className="flex-wrap text-center mt-5">

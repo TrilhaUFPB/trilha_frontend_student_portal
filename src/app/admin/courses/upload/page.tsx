@@ -4,15 +4,23 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Video, Course } from "@/types/interfaces";
 import { createVideos, fetchAllCourses } from "@/utils/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function UploadVideoPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
+  useEffect(() => {
+        if (!loading) {
+            if (!user) router.push("/login");
+            else if (user.role.name !== "admin") router.push("/");
+        }
+    }, [loading, user, router]);
   // Load courses when page mounts
   useEffect(() => {
     async function loadCourses() {
