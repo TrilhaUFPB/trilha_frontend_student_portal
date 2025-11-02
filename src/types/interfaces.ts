@@ -45,6 +45,7 @@ export interface AssignmentReview {
   is_group_work: boolean;
 }
 
+
 export interface AssignmentTeacherDashboard extends AssignmentReview {
   github_link?: string;
   due_date: string;
@@ -251,4 +252,25 @@ export interface FormData {
   password: string;
   confirmPassword: string;
   role_id: number;
+}
+
+// types
+
+export type Course =  {
+  id: number;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  videos: Video[]
+}
+
+export type Video = {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+  CourseId: number;
+  created_at: string;
+  updated_at: string;
 }

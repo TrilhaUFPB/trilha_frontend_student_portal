@@ -3,9 +3,13 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import RoleNavBar from "@/components/RoleNavBar";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { usePathname } from "next/navigation";
 
 function AppLayout({ children }: { children: ReactNode }) {
   const { role, loading } = useAuth();
+  const pathname = usePathname();
+  const hideNavBar = pathname.startsWith(`/${role}/courses`);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -15,7 +19,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   }
   return (
     <>
-      <RoleNavBar role={role} />
+      {!hideNavBar && <RoleNavBar role={role} />}
       {children}
     </>
   );

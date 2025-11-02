@@ -195,6 +195,12 @@ export default function StudentDashboard() {
               >
                 Manage Groups
               </Link>
+              <Link
+                href="/student/courses"
+                className="block w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+              >
+                All Courses
+              </Link>
             </div>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-sm">

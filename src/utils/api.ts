@@ -147,6 +147,69 @@ export async function deleteSubmission(id: number) {
     method: "DELETE",
   });
 }
+// =============================================================================
+// COURSES MANAGEMENT
+// =============================================================================
+
+export async function fetchAllCourses() {
+  return apiFetch(`${BACKEND_URL}/api/courses`);
+}
+
+export async function fetchCoursesById(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/courses/${id}`);
+}
+
+export async function createCourses(submissionData: any) {
+  return apiFetch(`${BACKEND_URL}/api/courses`, {
+    method: "POST",
+    body: JSON.stringify(submissionData),
+  });
+}
+
+export async function updateCourses(id: number, submissionData: any) {
+  return apiFetch(`${BACKEND_URL}/api/courses/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(submissionData),
+  });
+}
+
+export async function deleteCourses(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/courses/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// =============================================================================
+// VIDEOS MANAGEMENT
+// =============================================================================
+
+export async function fetchAllVideos() {
+  return apiFetch(`${BACKEND_URL}/api/videos`);
+}
+
+export async function fetchVideosById(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/videos/${id}`);
+}
+
+export async function createVideos(submissionData: any) {
+  return apiFetch(`${BACKEND_URL}/api/videos`, {
+    method: "POST",
+    body: JSON.stringify(submissionData),
+  });
+}
+
+export async function updateVideos(id: number, submissionData: any) {
+  return apiFetch(`${BACKEND_URL}/api/videos/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(submissionData),
+  });
+}
+
+export async function deleteVideos(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/videos/${id}`, {
+    method: "DELETE",
+  });
+}
 
 // =============================================================================
 // GROUP MANAGEMENT
