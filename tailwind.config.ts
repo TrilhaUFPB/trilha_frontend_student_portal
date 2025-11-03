@@ -10,6 +10,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        '3xl': '1920px',  // Full HD / 2K
+        '4xl': '2560px',  // 2.5K
+        '5xl': '3840px',  // 4K
+      },
       fontFamily: {
         poppins: ["var(--font-poppins)", "sans-serif"],
         spaceGrotesk: ["var(--font-space-grotesk)", "sans-serif"],

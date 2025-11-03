@@ -157,124 +157,127 @@ export default function EditCoursePage() {
   if (!course) return <div>Course not found.</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow rounded-xl space-y-8">
-      <h1 className="text-2xl font-bold">Edit Course</h1>
+    <main className="max-w-3xl mx-auto p-6 bg-white shadow rounded-xl space-y-8">
 
-      {/* Edit Course Form */}
-      <form onSubmit={handleUpdateCourse} className="space-y-4">
+      <div className="text-left">
+        <h1 className="text-xl 3xl:text-2xl font-bold">Edit Course</h1>
+
+        {/* Edit Course Form */}
+        <form onSubmit={handleUpdateCourse} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={course.title}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={course.description}
+              onChange={handleChange}
+              className="w-full p-2 border rounded h-24"
+              required
+            />
+          </div>
+
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Save Changes
+          </button>
+        </form>
+
+        {/* Linked Videos */}
         <div>
-          <label className="block text-sm font-medium">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={course.title}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+          <h2 className="3xl:text-xl text-md font-semibold mb-2">Linked Videos</h2>
+          {videos.length === 0 ? (
+            <p>No videos linked to this course.</p>
+          ) : (
+            <ul className="space-y-4">
+              {videos.map(video => (
+                <li key={video.id} className="flex flex-col bg-gray-100 p-3 rounded space-y-2 text-sm 3xl:text-xl">
+                  {editingVideoId === video.id ? (
+                    <>
+                      <input
+                        type="text"
+                        name="title"
+                        value={editingVideoData.title}
+                        onChange={handleVideoChange}
+                        className="border p-1 rounded w-full"
+                      />
+                      <textarea
+                        name="description"
+                        value={editingVideoData.description}
+                        onChange={handleVideoChange}
+                        className="border p-1 rounded w-full"
+                      />
+                      <input
+                        type="text"
+                        name="url"
+                        value={editingVideoData.url}
+                        onChange={handleVideoChange}
+                        className="border p-1 rounded w-full"
+                        placeholder="Video URL"
+                      />
+                      <label className="block text-sm font-medium">Course</label>
+                      <select
+                        name="CourseId"
+                        value={editingVideoData.CourseId}
+                        onChange={(e) => setEditingVideoData(prev => ({ ...prev, CourseId: Number(e.target.value) }))}
+                        className="border p-1 rounded w-full"
+                      >
+                        {allCourses.map(course => (
+                          <option key={course.id} value={course.id}>
+                            {course.title}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleSaveVideo(video.id)}
+                          className="px-3 py-1 bg-green-500 text-white rounded"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingVideoId(null)}
+                          className="px-3 py-1 bg-gray-500 text-white rounded"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold">{video.title}</span>
+                      <p>{video.description}</p>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => startEditing(video)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVideo(video.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium">Description</label>
-          <textarea
-            name="description"
-            value={course.description}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-
-        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Save Changes
-        </button>
-      </form>
-
-      {/* Linked Videos */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Linked Videos</h2>
-        {videos.length === 0 ? (
-          <p>No videos linked to this course.</p>
-        ) : (
-          <ul className="space-y-4">
-            {videos.map(video => (
-              <li key={video.id} className="flex flex-col bg-gray-100 p-3 rounded space-y-2">
-                {editingVideoId === video.id ? (
-                  <>
-                    <input
-                      type="text"
-                      name="title"
-                      value={editingVideoData.title}
-                      onChange={handleVideoChange}
-                      className="border p-1 rounded w-full"
-                    />
-                    <textarea
-                      name="description"
-                      value={editingVideoData.description}
-                      onChange={handleVideoChange}
-                      className="border p-1 rounded w-full"
-                    />
-                    <input
-                      type="text"
-                      name="url"
-                      value={editingVideoData.url}
-                      onChange={handleVideoChange}
-                      className="border p-1 rounded w-full"
-                      placeholder="Video URL"
-                    />
-                    <label className="block text-sm font-medium">Course</label>
-                    <select
-                      name="CourseId"
-                      value={editingVideoData.CourseId}
-                      onChange={(e) => setEditingVideoData(prev => ({ ...prev, CourseId: Number(e.target.value) }))}
-                      className="border p-1 rounded w-full"
-                    >
-                      {allCourses.map(course => (
-                        <option key={course.id} value={course.id}>
-                          {course.title}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleSaveVideo(video.id)}
-                        className="px-3 py-1 bg-green-500 text-white rounded"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingVideoId(null)}
-                        className="px-3 py-1 bg-gray-500 text-white rounded"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-bold">{video.title}</span>
-                    <p>{video.description}</p>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => startEditing(video)}
-                        className="px-3 py-1 bg-blue-500 text-white rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteVideo(video.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
-    </div>
+    </main>
   );
 }

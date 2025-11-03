@@ -49,7 +49,7 @@ export default function UploadVideoPage() {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Add Video</h1>
+      <h1 className="3xl:text-2xl font-bold mb-4 text-xl">Add Video</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"

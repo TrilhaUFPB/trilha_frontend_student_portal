@@ -4,25 +4,25 @@ import { useRouter } from "next/navigation";
 import { useState } from "react"
 
 export default function CoursePage() {
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    
-    const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
+  const router = useRouter();
 
-        const courseData = {
-            title,
-            description
-        };
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-        await createCourses(courseData);
-        router.push("/teacher/courses")
-    }
-    return (
-        <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Create a New Course</h1>
+    const courseData = {
+      title,
+      description
+    };
+
+    await createCourses(courseData);
+    router.push("/teacher/courses")
+  }
+  return (
+    <div className="max-w-xl mx-auto p-6">
+      <h1 className="text-xl 3xl:text-2xl font-bold mb-4">Create a New Course</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
@@ -47,5 +47,5 @@ export default function CoursePage() {
         </button>
       </form>
     </div>
-    )
+  )
 }

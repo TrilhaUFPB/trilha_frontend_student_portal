@@ -42,24 +42,29 @@ export default function CoursePage() {
   if (!course) return <div>Course not found.</div>;
 
   return (
-    <main className="flex-wrap text-center items-center align-middle">
+    <main className="flex text-center align-middle 3xl:w-1/2 mx-auto">
       <div className="p-6">
         <div className="flex justify-between">
-          <a href=""></a>
-          <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
-          <Link href={`/teacher/courses/${courseId}/edit`}><h2 className="text-xl font-semibold bg-gray-400 p-2 rounded-xl">Edit</h2></Link>
+          <h1 className="3xl:text-3xl text-xl font-bold mb-4">{course.title}</h1>
+          <Link href={`/teacher/courses/${courseId}/edit`}>
+            <h2 className="text-md 3xl:text-xl font-semibold bg-gray-900 p-2 rounded-xl text-white">Edit</h2>
+          </Link>
         </div>
         <p className="mb-6">{course.description}</p>
         {course.videos?.length > 0 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-2">Videos</h2>
-            <ul className="list-disc list-inside">
+            <h2 className="3xl:text-3xl text-xl font-semibold mb-2">Videos</h2>
+            <ul>
               {course.videos.map((video) => (
-                <li key={video.id} className="flex-wrap align-middle text-center items-center">
-                  <div className="font-bold text-3xl">{video.title}</div>
-                  <div className="text-xl">{video.description}</div>
-                  <div className="flex items-center justify-center h-screen">
-                    <iframe className="w-full h-full m-32" src={`https://www.youtube.com/embed/${video.url}`}></iframe>
+                <li key={video.id} className="mb-6">
+                  <div className="font-bold 3xl:text-3xl text-xl">{video.title}</div>
+                  <div className="3xl:text-xl text-sm mb-2">{video.description}</div>
+                  <div className="w-full aspect-video">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${video.url}`}
+                      allowFullScreen
+                    ></iframe>
                   </div>
                 </li>
               ))}
