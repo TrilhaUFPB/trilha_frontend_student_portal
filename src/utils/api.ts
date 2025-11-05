@@ -418,4 +418,92 @@ export async function fetchCommentsBySubmissionId(submissionId: number) {
 export async function fetchRatingsBySubmissionId(submissionId: number) {
   const allRatings = await fetchAllRatings();
   return (allRatings as any[]).filter(r => r.submission_id === submissionId);
+}
+
+// =============================================================================
+// DOCUMENT MANAGEMENT
+// =============================================================================
+
+export async function fetchAllDocuments() {
+  return apiFetch(`${BACKEND_URL}/api/documents`);
+}
+
+export async function fetchDocumentById(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/documents/${id}`);
+}
+
+export async function uploadDocument(file: File, title: string, courseId: number, description: string = "") {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("title", title);
+  formData.append("course_id", courseId.toString());
+  formData.append("description", description);
+
+  const response = await fetch(`${BACKEND_URL}/api/documents/upload`, {
+    method: "POST",
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(`Request failed (${response.status}): ${errorMessage}`);
+  }
+
+  return response.json();
+}
+
+export async function createDocumentFromLink(fileLink: string, title: string, courseId: number, description: string = "") {
+  return apiFetch(`${BACKEND_URL}/api/documents/link`, {
+    method: "POST",
+    body: JSON.stringify({ file_link: fileLink, title, course_id: courseId, description }),
+  });
+}
+
+export async function fetchDocumentsByCourseId(courseId: number) {
+  return apiFetch(`${BACKEND_URL}/api/documents/course/${courseId}`);
+}
+
+export async function updateDocument(id: number, documentData: any) {
+  return apiFetch(`${BACKEND_URL}/api/documents/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(documentData),
+  });
+}
+
+export async function deleteDocument(id: number) {
+  return apiFetch(`${BACKEND_URL}/api/documents/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function downloadDocument(id: number) {
+  const token = getToken();
+  const response = await fetch(`${BACKEND_URL}/api/documents/${id}/download`, {
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(`Request failed (${response.status}): ${errorMessage}`);
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = response.headers.get("Content-Disposition")?.split("filename=")[1]?.replace(/"/g, "") || "document";
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+export async function fetchMyDocuments() {
+  return apiFetch(`${BACKEND_URL}/api/documents/my-documents`);
 } 

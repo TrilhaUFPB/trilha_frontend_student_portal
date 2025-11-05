@@ -108,10 +108,11 @@ export default function AdminUsersPage() {
     }
   };
 
-  const startEditing = (userId: number, currentRoleId: number) => {
-    setEditingUserId(userId);
-    setEditingUserRole(currentRoleId);
-  };
+  const startEditing = (userId: number, currentRoleId?: number) => {
+  setEditingUserId(userId);
+  setEditingUserRole(currentRoleId ?? 0);
+};
+
 
   const cancelEditing = () => {
     setEditingUserId(null);
@@ -296,7 +297,7 @@ export default function AdminUsersPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(userItem.created_at).toLocaleDateString()}
+                        {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString() : "Data indisponível"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {editingUserId === userItem.id ? (

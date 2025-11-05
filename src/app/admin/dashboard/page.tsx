@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                 Create New User
               </Link>
               <Link
-                href="/admin/courses"
+                href="/teacher/courses"
                 className="block w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
               >
                 All Courses

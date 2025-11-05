@@ -85,7 +85,7 @@ export default function SubmissionReviewPage() {
         if (SubmissionReview.userId) {
           UserReview = await fetchUserById(SubmissionReview.userId) as UserReview;
         } else if (SubmissionReview.groupId) {
-          GroupReview = await fetchGroupById(SubmissionReview.groupId) as GroupReview;
+          GroupReview = await fetchGroupById(SubmissionReview.groupId) as unknown as GroupReview;
         }
 
         details[SubmissionReview.id] = {

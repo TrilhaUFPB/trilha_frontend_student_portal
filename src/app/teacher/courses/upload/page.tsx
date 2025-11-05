@@ -14,13 +14,15 @@ export default function UploadVideoPage() {
   const [url, setUrl] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const allowedRoles = ["admin", "teacher"]
 
   useEffect(() => {
-        if (!loading) {
-            if (!user) router.push("/login");
-            else if (user.role.name !== "teacher") router.push("/");
-        }
-    }, [loading, user, router]);
+    if (!loading && !user) {
+      router.push("/login");
+    } else if (!loading && user && !allowedRoles.includes(user.role.name ?? "")) {
+      router.push("/");
+    }
+  }, [loading, user, router]);
   // Load courses when page mounts
   useEffect(() => {
     async function loadCourses() {

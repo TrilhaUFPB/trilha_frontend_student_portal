@@ -1,10 +1,14 @@
 "use client";
-
+import { BookOpen, PlayCircle, GraduationCap } from 'lucide-react';
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Course } from "@/types/interfaces";
 import { fetchCoursesById } from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
+import book from "@/../public/book.png"
+import play from "@/../public/play.png"
+import hat from "@/../public/hat.png"
+import Image from "next/image";
 import Link from "next/link";
 
 export default function CoursePage() {
@@ -42,35 +46,67 @@ export default function CoursePage() {
   if (!course) return <div>Course not found.</div>;
 
   return (
-    <main className="flex text-center align-middle 3xl:w-1/2 mx-auto">
-      <div className="p-6">
-        <div className="flex justify-between">
-          <h1 className="3xl:text-3xl text-xl font-bold mb-4">{course.title}</h1>
-          <Link href={`/teacher/courses/${courseId}/edit`}>
-            <h2 className="text-md 3xl:text-xl font-semibold bg-gray-900 p-2 rounded-xl text-white">Edit</h2>
+    <main className="flex text-center mt-5 3xl:w-1/2 mx-8 3xl:mx-auto">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-full mb-6">
+            <GraduationCap className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Bem-vindo ao Curso de {course.title}
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            {course.description}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto my-6">
+          <Link href={`${course.id}/materials`}>
+            <button
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 text-left overflow-hidden transform hover:-translate-y-1"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <BookOpen className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                  Materiais
+                </h2>
+                <p className="text-gray-600 text-lg mb-4">
+                  Acesse PDFs, documentos e todo o material escrito do curso
+                </p>
+                <span className="inline-flex items-center text-blue-600 font-semibold group-hover:gap-2 transition-all">
+                  Acessar materiais
+                  <span className="ml-2 group-hover:ml-0 transition-all">→</span>
+                </span>
+              </div>
+            </button>
+          </Link>
+
+          <Link href={`${course.id}/videos`}>
+            <button
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 text-left overflow-hidden transform hover:-translate-y-1"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-green-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <PlayCircle className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                  Vídeos
+                </h2>
+                <p className="text-gray-600 text-lg mb-4">
+                  Assista às aulas em vídeo e aprenda de forma interativa
+                </p>
+                <span className="inline-flex items-center text-green-600 font-semibold group-hover:gap-2 transition-all">
+                  Acessar vídeos
+                  <span className="ml-2 group-hover:ml-0 transition-all">→</span>
+                </span>
+              </div>
+            </button>
           </Link>
         </div>
-        <p className="mb-6">{course.description}</p>
-        {course.videos?.length > 0 && (
-          <div>
-            <h2 className="3xl:text-3xl text-xl font-semibold mb-2">Videos</h2>
-            <ul>
-              {course.videos.map((video) => (
-                <li key={video.id} className="mb-6">
-                  <div className="font-bold 3xl:text-3xl text-xl">{video.title}</div>
-                  <div className="3xl:text-xl text-sm mb-2">{video.description}</div>
-                  <div className="w-full aspect-video">
-                    <iframe
-                      className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${video.url}`}
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </main>
   );

@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 function AppLayout({ children }: { children: ReactNode }) {
   const { role, loading } = useAuth();
   const pathname = usePathname();
-  const hideNavBar = pathname.startsWith(`/${role}/courses`);
+  const hideNavBar = pathname.startsWith(`/teacher/courses`) || pathname.startsWith(`/student/courses`);
 
   if (loading) {
     return (

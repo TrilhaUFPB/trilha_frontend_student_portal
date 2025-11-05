@@ -1,11 +1,12 @@
 "use client";
-
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Course } from "@/types/interfaces";
 import { fetchCoursesById } from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft, Pencil } from "lucide-react";
 
 export default function CoursePage() {
   const params = useParams();
@@ -42,24 +43,37 @@ export default function CoursePage() {
   if (!course) return <div>Course not found.</div>;
 
   return (
-    <main className="flex-wrap text-center items-center align-middle">
+    <main className="text-center align-middle 3xl:w-1/2 mx-auto">
       <div className="p-6">
         <div className="flex justify-between">
-          <a href=""></a>
-          <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
-          <Link href={`/teacher/courses/${courseId}/edit`}><h2 className="text-xl font-semibold bg-gray-400 p-2 rounded-xl">Edit</h2></Link>
+          <div className="flex justify-between items-center">
+            <Link href={`/teacher/courses/${course.id}`} className="flex items-center gap-2">
+              <ArrowLeft />
+              <span>Voltar</span>
+            </Link>
+          </div>
+          <Link href={`/teacher/courses/${courseId}/videos/edit`} className="flex items-center gap-2">
+            <Pencil />
+            Edit
+          </Link>
+          <Link href={`/teacher/courses/${courseId}/videos/delete`} className="flex items-center gap-2">
+            <Pencil />
+            Delete
+          </Link>
         </div>
-        <p className="mb-6">{course.description}</p>
         {course.videos?.length > 0 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-2">Videos</h2>
-            <ul className="list-disc list-inside">
+            <ul>
               {course.videos.map((video) => (
-                <li key={video.id} className="flex-wrap align-middle text-center items-center">
-                  <div className="font-bold text-3xl">{video.title}</div>
-                  <div className="text-xl">{video.description}</div>
-                  <div className="flex items-center justify-center h-screen">
-                    <iframe className="w-full h-full m-32" src={`https://www.youtube.com/embed/${video.url}`}></iframe>
+                <li key={video.id} className="my-6">
+                  <div className="font-bold 3xl:text-3xl text-xl">{video.title}</div>
+                  <div className="3xl:text-xl text-sm mb-2">{video.description}</div>
+                  <div className="w-full aspect-video">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${video.url}`}
+                      allowFullScreen
+                    />
                   </div>
                 </li>
               ))}

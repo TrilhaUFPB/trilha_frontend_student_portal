@@ -7,6 +7,27 @@ export interface AssignmentSubmissions extends AssignmentTeacher {
   due_date?: string;
 }
 
+export interface Document {
+  id: number;
+  title: string;
+  description?: string;
+  type: "upload" | "link";
+  file_path?: string;    // e.g. "uploads\xxxx.pdf"
+  file_name?: string;    // e.g. "bootcamp.pdf"
+  file_size?: number;    // bytes
+  mime_type?: string;    // e.g. "application/pdf"
+  file_link?: string;    // if you also support external links
+  course_id: number;
+  course?: Course;
+  created_by_id?: number;
+  created_by?: User;
+  created_at?: string;
+  updated_at?: string;
+  uploader_id?: number;
+  uploader_name?: string;
+}
+
+
 export interface SubmissionTeacher {
   id: number;
   assignment_id: number;
@@ -122,10 +143,10 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role_id: number;
+  role_id?: number;
   role: { id: number; name: string };
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 //Teacher Dashboard
@@ -256,7 +277,7 @@ export interface FormData {
 
 // types
 
-export type Course =  {
+export type Course = {
   id: number;
   title: string;
   description: string;
