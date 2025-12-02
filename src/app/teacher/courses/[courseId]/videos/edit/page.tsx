@@ -44,7 +44,7 @@ export default function EditCoursePage() {
 
         const normalizedVideos = (data.videos ?? []).map(v => ({
           ...v,
-          CourseId: (v as any).CourseId ?? (v as any).courseid ?? 0, // <-- normalize field
+          CourseId: (v as Video).CourseId ?? (v as Video).CourseId ?? 0, // <-- normalize field
         }));
 
         console.log("Videos loaded:", normalizedVideos);

@@ -2,22 +2,24 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  fetchAllAssignments, 
+import {
+  fetchAllAssignments,
   fetchAllSubmissions,
   fetchUserGroupForAssignment
 } from "@/utils/api";
 import Link from "next/link";
-import { AssignmentTeacherDashboard, SubmissionTeacher , AssignmentWithStatus} from "@/types/interfaces";
+import { AssignmentTeacherDashboard, SubmissionTeacher, AssignmentWithStatus, Group } from "@/types/interfaces";
 
 export default function StudentAssignmentsPage() {
+  type FilterType = "all" | "individual" | "group" | "submitted" | "pending" | "overdue"
+  type FilterTypeDo = "due_date" | "title" | "type" | "status"
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+
   const [assignments, setAssignments] = useState<AssignmentWithStatus[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [filter, setFilter] = useState<"all" | "individual" | "group" | "submitted" | "pending" | "overdue">("all");
-  const [sortBy, setSortBy] = useState<"due_date" | "title" | "type" | "status">("due_date");
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [sortBy, setSortBy] = useState<FilterTypeDo>("due_date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -30,88 +32,88 @@ export default function StudentAssignmentsPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user && user.role.name === "student") {
-      loadAssignmentsData();
-    }
-  }, [user]);
+    // 1. Definição da função
+    const loadAssignmentsData = async () => {
+      // Mantive sua verificação aqui dentro, perfeito.
+      if (user && user.role.name === "student") {
+        try {
+          setLoadingData(true);
 
-  const loadAssignmentsData = async () => {
-    try {
-      setLoadingData(true);
-      
-      const [allAssignments, allSubmissions] = await Promise.all([
-        fetchAllAssignments(),
-        fetchAllSubmissions()
-      ]);
-      
-      // Enrich assignments with submission status and other info
-      const enrichedAssignments: AssignmentWithStatus[] = await Promise.all(
-        (allAssignments as AssignmentTeacherDashboard[]).map(async (assignment) => {
-          // Check for user's submission (individual assignments)
-          let userSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
-            s.assignment_id === assignment.id && s.user_id === user!.id
+          const [allAssignments, allSubmissions] = await Promise.all([
+            fetchAllAssignments(),
+            fetchAllSubmissions()
+          ]);
+
+          const enrichedAssignments: AssignmentWithStatus[] = await Promise.all(
+            (allAssignments as AssignmentTeacherDashboard[]).map(async (assignment) => {
+              const userSubmission = (allSubmissions as SubmissionTeacher[]).find(s =>
+                s.assignment_id === assignment.id && s.user_id === user!.id
+              );
+
+              let userGroup: Group | null = null;
+              let groupSubmission: SubmissionTeacher | undefined = undefined;
+
+              if (assignment.is_group_work) {
+                userGroup = await fetchUserGroupForAssignment(assignment.id, user!.id);
+                if (userGroup) {
+                  groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s =>
+                    s.assignment_id === assignment.id && s.group_id === userGroup!.id
+                  );
+                }
+              }
+
+              const submission = assignment.is_group_work ? groupSubmission : userSubmission;
+              const hasSubmission = !!submission;
+
+              const now = new Date();
+              const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
+              const isOverdue = due_date ? due_date < now : false;
+              const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+
+              let canSubmit = !hasSubmission;
+              if (assignment.is_group_work) {
+                canSubmit = canSubmit && !!userGroup;
+              }
+
+              return {
+                ...assignment,
+                hasSubmission,
+                submission,
+                userGroup,
+                isOverdue,
+                daysUntilDue,
+                canSubmit
+              };
+            })
           );
-          
-                     // Check for group submission and user's group (group assignments)
-           let userGroup: any = null;
-           let groupSubmission: SubmissionTeacher | undefined = undefined;
-           if (assignment.is_group_work) {
-             userGroup = await fetchUserGroupForAssignment(assignment.id, user!.id);
-             if (userGroup) {
-               groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
-                 s.assignment_id === assignment.id && s.group_id === userGroup.id
-               );
-             }
-           }
-           
-           const submission = assignment.is_group_work ? groupSubmission : userSubmission;
-          const hasSubmission = !!submission;
-          
-          // Calculate due date info
-          const now = new Date();
-          const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
-          const isOverdue = due_date ? due_date < now : false;
-          const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
-          
-          // Determine if user can submit
-          let canSubmit = !hasSubmission;
-          if (assignment.is_group_work) {
-            canSubmit = canSubmit && !!userGroup; // Must be in a group to submit
-          }
-          
-          return {
-            ...assignment,
-            hasSubmission,
-            submission,
-            userGroup,
-            isOverdue,
-            daysUntilDue,
-            canSubmit
-          };
-        })
-      );
-      
-      setAssignments(enrichedAssignments);
-      
-    } catch (error) {
-      console.error("Error loading assignments data:", error);
-    } finally {
-      setLoadingData(false);
-    }
-  };
+
+          setAssignments(enrichedAssignments);
+
+        } catch (error) {
+          console.error("Error loading assignments data:", error);
+        } finally {
+          setLoadingData(false);
+        }
+      }
+    };
+
+    // 2. AQUI ESTAVA FALTANDO: Executar a função que você acabou de criar
+    loadAssignmentsData();
+
+  }, [user]); // Dependências ok
 
   const getFilteredAssignments = () => {
     let filtered = assignments;
-    
+
     // Apply search filter
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(a => 
+      filtered = filtered.filter(a =>
         a.title.toLowerCase().includes(searchLower) ||
         a.description.toLowerCase().includes(searchLower)
       );
     }
-    
+
     // Apply category filter
     switch (filter) {
       case "individual":
@@ -130,11 +132,11 @@ export default function StudentAssignmentsPage() {
         filtered = filtered.filter(a => a.isOverdue && !a.hasSubmission);
         break;
     }
-    
+
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case "due_date":
           if (!a.due_date && !b.due_date) comparison = 0;
@@ -152,10 +154,10 @@ export default function StudentAssignmentsPage() {
           comparison = (a.hasSubmission ? 1 : 0) - (b.hasSubmission ? 1 : 0);
           break;
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
   };
 
@@ -166,7 +168,7 @@ export default function StudentAssignmentsPage() {
     const submittedAssignments = assignments.filter(a => a.hasSubmission).length;
     const pendingAssignments = assignments.filter(a => !a.hasSubmission).length;
     const overdueAssignments = assignments.filter(a => a.isOverdue && !a.hasSubmission).length;
-    
+
     return {
       totalAssignments,
       individualAssignments,
@@ -290,12 +292,12 @@ export default function StudentAssignmentsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Filter</label>
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as any)}
+                onChange={(e) => setFilter(e.target.value as FilterType)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Assignments</option>
@@ -306,12 +308,12 @@ export default function StudentAssignmentsPage() {
                 <option value="overdue">Overdue</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as FilterTypeDo)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="due_date">Due Date</option>
@@ -320,7 +322,7 @@ export default function StudentAssignmentsPage() {
                 <option value="status">Status</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Order</label>
               <select
@@ -342,7 +344,7 @@ export default function StudentAssignmentsPage() {
               Assignments ({filteredAssignments.length})
             </h2>
           </div>
-          
+
           {filteredAssignments.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500 text-lg">No assignments found.</p>
@@ -361,21 +363,20 @@ export default function StudentAssignmentsPage() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(assignment)}`}>
                           {getStatusText(assignment)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          assignment.is_group_work 
-                            ? "bg-purple-100 text-purple-800" 
-                            : "bg-blue-100 text-blue-800"
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${assignment.is_group_work
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
+                          }`}>
                           {assignment.is_group_work ? "Group Work" : "Individual"}
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-600 mb-3 line-clamp-2">{assignment.description}</p>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
                         <div>
                           <p><strong>Due Date:</strong> {
-                            assignment.due_date 
+                            assignment.due_date
                               ? new Date(assignment.due_date).toLocaleString()
                               : "No due date"
                           }</p>
@@ -392,7 +393,7 @@ export default function StudentAssignmentsPage() {
                           )}
                         </div>
                       </div>
-                      
+
                       {assignment.github_link && (
                         <div className="mb-3">
                           <a
@@ -405,7 +406,7 @@ export default function StudentAssignmentsPage() {
                           </a>
                         </div>
                       )}
-                      
+
                       {/* Warning for group assignments without group */}
                       {assignment.is_group_work && !assignment.userGroup && !assignment.hasSubmission && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
@@ -415,7 +416,7 @@ export default function StudentAssignmentsPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="ml-4">
                       <Link
                         href={`/student/assignments/${assignment.id}`}
@@ -443,7 +444,7 @@ export default function StudentAssignmentsPage() {
               View Submissions →
             </div>
           </Link>
-          
+
           <Link
             href="/student/groups"
             className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
@@ -454,7 +455,7 @@ export default function StudentAssignmentsPage() {
               Manage Groups →
             </div>
           </Link>
-          
+
           <Link
             href="/student/dashboard"
             className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"

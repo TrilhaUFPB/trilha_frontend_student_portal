@@ -7,11 +7,14 @@ import { fetchGroupById, fetchGroupMembersByGroupId, fetchAssignmentById } from 
 import Link from "next/link";
 import { GroupGroups, AssignmentGroups, GroupMember2 } from "@/types/interfaces";
 
-
-export default function StudentGroupDetailsPage({ params }: { params: { groupId: string } }) {
+type Props = {
+  params: Promise<{ groupId: string }>
+}
+export default async function StudentGroupDetailsPage({ params }: Props) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const groupId = Number(params.groupId);
+  const resolvedParams = await params;
+  const groupId = Number(resolvedParams.groupId);
 
   const [group, setGroup] = useState<GroupGroups | null>(null);
   const [members, setMembers] = useState<GroupMember2[]>([]);
@@ -38,7 +41,6 @@ export default function StudentGroupDetailsPage({ params }: { params: { groupId:
           setAssignment(a);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Failed to load group", e);
       } finally {
         setLoadingData(false);

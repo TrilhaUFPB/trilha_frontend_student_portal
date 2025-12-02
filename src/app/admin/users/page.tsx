@@ -32,9 +32,27 @@ export default function AdminUsersPage() {
     }
   }, [user]);
 
+
   useEffect(() => {
-    filterUsers();
-  }, [users, searchTerm, roleFilter]);
+    let filtered = users;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        u =>
+          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Role filter
+    if (roleFilter !== "all") {
+      filtered = filtered.filter(u => u.role.name === roleFilter);
+    }
+
+    setFilteredUsers(filtered);
+  }, [users, searchTerm, roleFilter]); // As dependências ficam claras aqu
+
 
   const loadData = async () => {
     try {
@@ -51,26 +69,6 @@ export default function AdminUsersPage() {
     } finally {
       setLoadingData(false);
     }
-  };
-
-  const filterUsers = () => {
-    let filtered = users;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        u => 
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Role filter
-    if (roleFilter !== "all") {
-      filtered = filtered.filter(u => u.role.name === roleFilter);
-    }
-
-    setFilteredUsers(filtered);
   };
 
   const handleRoleUpdate = async (userId: number, newRoleId: number) => {
@@ -109,9 +107,9 @@ export default function AdminUsersPage() {
   };
 
   const startEditing = (userId: number, currentRoleId?: number) => {
-  setEditingUserId(userId);
-  setEditingUserRole(currentRoleId ?? 0);
-};
+    setEditingUserId(userId);
+    setEditingUserRole(currentRoleId ?? 0);
+  };
 
 
   const cancelEditing = () => {
@@ -283,15 +281,14 @@ export default function AdminUsersPage() {
                             ))}
                           </select>
                         ) : (
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            userItem.role.name === "pending"
-                              ? "bg-orange-100 text-orange-800"
-                              : userItem.role.name === "admin"
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${userItem.role.name === "pending"
+                            ? "bg-orange-100 text-orange-800"
+                            : userItem.role.name === "admin"
                               ? "bg-red-100 text-red-800"
                               : userItem.role.name === "teacher"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-green-100 text-green-800"
-                          }`}>
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-green-100 text-green-800"
+                            }`}>
                             {userItem.role.name}
                           </span>
                         )}

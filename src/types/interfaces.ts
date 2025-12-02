@@ -1,8 +1,18 @@
 // TeacherAssigmentSubmissions
 export interface AssignmentTeacher {
   id: number;
-  title: string
+  title: string;
 }
+
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string;
+  due_date: string | null;
+  is_group_work: boolean;
+  github_link?: string;
+}
+
 export interface AssignmentSubmissions extends AssignmentTeacher {
   due_date?: string;
 }
@@ -173,6 +183,7 @@ export interface Group {
   assignment_id: number;
   name: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface GroupGroups extends Group {
@@ -193,7 +204,9 @@ export interface GroupMember {
   group_id: number;
   user_id: number;
   joined_at: string;
-  user?: any;
+  user?: User;
+  created_at: string;
+  updated_at: string;
 }
 
 export type GroupAdmin = Omit<GroupMember, "joined_at" | "user">;
@@ -209,7 +222,6 @@ export interface GroupMember2 extends GroupMember {
   group_id: number;
   user_id: number;
   joined_at: string;
-  user?: { id: number; name: string; email: string };
 }
 export interface UserGroups {
   id: number;
@@ -230,7 +242,7 @@ export interface GroupWithDetails extends GroupAssignment {
 export interface AssignmentWithStatus extends AssignmentTeacherDashboard {
   hasSubmission: boolean;
   submission?: SubmissionTeacher;
-  userGroup?: any;
+  userGroup?: GroupMember;
   isOverdue: boolean;
   daysUntilDue?: number;
   canSubmit: boolean;

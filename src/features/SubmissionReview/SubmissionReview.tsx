@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   fetchAssignmentById, createRating,
   fetchSubmissionsByAssignmentId,
@@ -47,11 +47,7 @@ export default function SubmissionReviewPage() {
   const [expandedSubmissions, setExpandedSubmissions] = useState<{ [key: number]: boolean }>({});
   const [activeTab, setActiveTab] = useState<{ [key: number]: 'comments' | 'ratings' }>({});
 
-  useEffect(() => {
-    fetchData();
-  }, [assignmentId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -70,7 +66,7 @@ export default function SubmissionReviewPage() {
       setSubmissions(submissionsData);
 
       // Fetch details for each SubmissionReview
-      const details: { [key: number]: any } = {};
+      const details: { [key: number]: { comments: CommentReview[]; ratings: RatingReview[]; UserReview?: UserReview; GroupReview?: GroupReview; } } = {};
 
       for (const SubmissionReview of submissionsData) {
         const [comments, ratings] = await Promise.all([
@@ -103,7 +99,11 @@ export default function SubmissionReviewPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [assignmentId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleAddComment = async (submissionId: number) => {
     if (!newComment[submissionId]?.trim()) return;

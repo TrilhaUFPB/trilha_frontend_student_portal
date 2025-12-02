@@ -91,7 +91,7 @@ export default function EditMaterialsPage() {
       title: doc.title,
       description: doc.description,
       type: doc.type,
-      file_link: (doc as any).file_link,
+      file_link: (doc as Document).file_link,
       course_id: doc.course_id,
     });
     setSelectedFile(null);
@@ -124,7 +124,7 @@ export default function EditMaterialsPage() {
       //
       // IMPORTANT: adapt this logic if your backend has a different contract.
 
-      let updatedFields: any = {
+      const updatedFields: Partial<Document> = {
         title: editingData.title ?? "",
         description: editingData.description ?? "",
         type: editingData.type ?? "upload",
@@ -149,10 +149,10 @@ export default function EditMaterialsPage() {
         // uploadResult should contain file_path/file_name/mime_type etc.
         // Merge returned file info into updatedFields if present
         if (uploadResult && typeof uploadResult === "object") {
-          if ((uploadResult as any).file_path) updatedFields.file_path = (uploadResult as any).file_path;
-          if ((uploadResult as any).file_name) updatedFields.file_name = (uploadResult as any).file_name;
-          if ((uploadResult as any).mime_type) updatedFields.mime_type = (uploadResult as any).mime_type;
-          if ((uploadResult as any).file_link) updatedFields.file_link = (uploadResult as any).file_link;
+          if ((uploadResult as Document).file_path) updatedFields.file_path = (uploadResult as Document).file_path;
+          if ((uploadResult as Document).file_name) updatedFields.file_name = (uploadResult as Document).file_name;
+          if ((uploadResult as Document).mime_type) updatedFields.mime_type = (uploadResult as Document).mime_type;
+          if ((uploadResult as Document).file_link) updatedFields.file_link = (uploadResult as Document).file_link;
         }
       }
 
@@ -187,7 +187,7 @@ export default function EditMaterialsPage() {
   }
 
   // Quick UI helpers
-  const uploaderName = (doc: Document) => doc.created_by?.name ?? (doc as any).uploader_name ?? `#${doc.created_by_id ?? "?"}`;
+  const uploaderName = (doc: Document) => doc.created_by?.name ?? (doc as Document).uploader_name ?? `#${doc.created_by_id ?? "?"}`;
 
   if (loadingData) return <div className="p-6">Carregando materiais...</div>;
   if (error) return <div className="p-6 text-red-600">Erro: {error}</div>;
@@ -229,7 +229,7 @@ export default function EditMaterialsPage() {
                     />
                     <div className="flex gap-2 mb-2">
                       <select
-                        value={(editingData.type as any) ?? "upload"}
+                        value={editingData.type as "upload" | "link"}
                         onChange={(e) => handleEditingChange("type", e.target.value as "upload" | "link")}
                         className="p-2 border rounded"
                       >
@@ -248,7 +248,7 @@ export default function EditMaterialsPage() {
                       </select>
                     </div>
 
-                    { (editingData.type as any) === "link" ? (
+                    {(editingData.type as string) === "link" ? (
                       <input
                         type="text"
                         value={(editingData.file_link as string) ?? ""}
@@ -267,7 +267,7 @@ export default function EditMaterialsPage() {
                         />
                         {selectedFile && <div className="text-xs mt-1">Arquivo selecionado: {selectedFile.name}</div>}
                       </div>
-                    ) }
+                    )}
 
                     <div className="flex gap-2 mt-2">
                       <button

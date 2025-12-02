@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 
+const allowedRoles = ["admin", "teacher"];
 export default function CoursePage() {
   const params = useParams();
   const { user } = useAuth();
@@ -20,7 +21,6 @@ export default function CoursePage() {
   const [docsLoading, setDocsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const allowedRoles = ["admin", "teacher"];
 
   // Redirect logic (keep your existing behavior)
   useEffect(() => {
@@ -91,9 +91,9 @@ export default function CoursePage() {
           <span>Voltar</span>
         </Link>
         <Link href={`/teacher/courses/${courseId}/materials/edit`} className="flex items-center gap-2">
-          <Pencil/>
-            Edit
-          </Link>
+          <Pencil />
+          Edit
+        </Link>
       </div>
 
       <section className="mt-6 text-left">

@@ -5,9 +5,9 @@ import { Course } from "@/types/interfaces";
 import { fetchCoursesById } from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, Pencil } from "lucide-react";
 
+const allowedRoles = ["admin", "teacher"]
 export default function CoursePage() {
   const params = useParams();
   const { user } = useAuth();
@@ -15,7 +15,6 @@ export default function CoursePage() {
   const courseId = Number(params.courseId); // get course ID from URL
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
-  const allowedRoles = ["admin", "teacher"]
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");

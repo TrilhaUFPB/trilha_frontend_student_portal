@@ -2,8 +2,8 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  fetchAllAssignments, 
+import {
+  fetchAllAssignments,
   fetchAllSubmissions,
   fetchAllGroups,
   deleteAssignment
@@ -17,19 +17,21 @@ interface AssignmentWithStats extends AssignmentTeacherDashboard {
   isOverdue: boolean;
   daysUntilDue?: number;
 }
+const allowedRoles = ["teacher", "admin"]
 
 export default function TeacherAssignmentsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+  type filtertype = "all" | "individual" | "group" | "overdue" | "upcoming"
+  type filtertypedo = "date" | "title" | "submissions" | "due_date"
+
   const [assignments, setAssignments] = useState<AssignmentWithStats[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [filter, setFilter] = useState<"all" | "individual" | "group" | "overdue" | "upcoming">("all");
-  const [sortBy, setSortBy] = useState<"date" | "title" | "submissions" | "due_date">("due_date");
+  const [filter, setFilter] = useState<filtertype>("all");
+  const [sortBy, setSortBy] = useState<filtertypedo>("due_date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: number, title: string } | null>(null);
-  const allowedRoles = ["teacher", "admin"]
-  
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -39,7 +41,7 @@ export default function TeacherAssignmentsPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user && user.role.name &&allowedRoles.includes(user.role.name)) {
+    if (user && user.role.name && allowedRoles.includes(user.role.name)) {
       loadAssignmentsData();
     }
   }, [user]);
@@ -47,23 +49,23 @@ export default function TeacherAssignmentsPage() {
   const loadAssignmentsData = async () => {
     try {
       setLoadingData(true);
-      
+
       const [allAssignments, allSubmissions, allGroups] = await Promise.all([
         fetchAllAssignments(),
         fetchAllSubmissions(),
         fetchAllGroups()
       ]);
-      
+
       // Enrich assignments with statistics
       const enrichedAssignments: AssignmentWithStats[] = (allAssignments as AssignmentTeacherDashboard[]).map((assignment) => {
         const submissions = (allSubmissions as SubmissionTeacher[]).filter(s => s.assignment_id === assignment.id);
         const groups = (allGroups as Group[]).filter(g => g.assignment_id === assignment.id);
-        
+
         const now = new Date();
         const due_date = assignment.due_date ? new Date(assignment.due_date) : null;
         const isOverdue = due_date ? due_date < now : false;
         const daysUntilDue = due_date ? Math.ceil((due_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
-        
+
         return {
           ...assignment,
           submissionCount: submissions.length,
@@ -72,9 +74,9 @@ export default function TeacherAssignmentsPage() {
           daysUntilDue
         };
       });
-      
+
       setAssignments(enrichedAssignments);
-      
+
     } catch (error) {
       console.error("Error loading assignments data:", error);
     } finally {
@@ -84,7 +86,7 @@ export default function TeacherAssignmentsPage() {
 
   const getFilteredAssignments = () => {
     let filtered = assignments;
-    
+
     // Apply filter
     switch (filter) {
       case "individual":
@@ -100,11 +102,11 @@ export default function TeacherAssignmentsPage() {
         filtered = filtered.filter(a => !a.isOverdue && a.daysUntilDue !== undefined && a.daysUntilDue <= 7);
         break;
     }
-    
+
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case "date":
           // Sort by creation date - we'll use the assignment ID as a proxy
@@ -123,10 +125,10 @@ export default function TeacherAssignmentsPage() {
           else comparison = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
           break;
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
   };
 
@@ -137,7 +139,7 @@ export default function TeacherAssignmentsPage() {
     const overdueAssignments = assignments.filter(a => a.isOverdue).length;
     const totalSubmissions = assignments.reduce((sum, a) => sum + a.submissionCount, 0);
     const totalGroups = assignments.reduce((sum, a) => sum + a.groupCount, 0);
-    
+
     return {
       totalAssignments,
       individualAssignments,
@@ -258,7 +260,7 @@ export default function TeacherAssignmentsPage() {
               <label className="text-sm font-medium text-gray-700">Filter:</label>
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as any)}
+                onChange={(e) => setFilter(e.target.value as filtertype)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Assignments</option>
@@ -268,12 +270,12 @@ export default function TeacherAssignmentsPage() {
                 <option value="upcoming">Due Soon (7 days)</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Sort by:</label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as filtertypedo)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="due_date">Due Date</option>
@@ -282,7 +284,7 @@ export default function TeacherAssignmentsPage() {
                 <option value="submissions">Submission Count</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Order:</label>
               <select
@@ -304,13 +306,13 @@ export default function TeacherAssignmentsPage() {
               Assignments ({filteredAssignments.length})
             </h2>
           </div>
-          
+
           {filteredAssignments.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500 text-lg">No assignments found.</p>
               <p className="text-gray-400 mt-2">
-                {filter === "all" 
-                  ? "Create your first assignment to get started!" 
+                {filter === "all"
+                  ? "Create your first assignment to get started!"
                   : "Try adjusting your filters to see more assignments."}
               </p>
               <Link
@@ -331,21 +333,20 @@ export default function TeacherAssignmentsPage() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(assignment)}`}>
                           {getStatusText(assignment)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          assignment.is_group_work 
-                            ? "bg-purple-100 text-purple-800" 
-                            : "bg-blue-100 text-blue-800"
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${assignment.is_group_work
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
+                          }`}>
                           {assignment.is_group_work ? "Group Work" : "Individual"}
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-600 mb-3 line-clamp-2">{assignment.description}</p>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
                         <div>
                           <p><strong>Due Date:</strong> {
-                            assignment.due_date 
+                            assignment.due_date
                               ? new Date(assignment.due_date).toLocaleString()
                               : "No due date"
                           }</p>
@@ -357,7 +358,7 @@ export default function TeacherAssignmentsPage() {
                           <p><strong>Groups:</strong> {assignment.groupCount} {assignment.is_group_work ? "created" : "(N/A)"}</p>
                         </div>
                       </div>
-                      
+
                       {assignment.github_link && (
                         <div className="mb-3">
                           <a
@@ -371,7 +372,7 @@ export default function TeacherAssignmentsPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="ml-4 flex flex-col gap-2">
                       <Link
                         href={`/teacher/submissions/${assignment.id}`}
@@ -379,16 +380,16 @@ export default function TeacherAssignmentsPage() {
                       >
                         View Submissions ({assignment.submissionCount})
                       </Link>
-                      
+
                       <Link
                         href={`/teacher/assignments/${assignment.id}/edit`}
                         className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors text-sm text-center"
                       >
                         Edit
                       </Link>
-                      
+
                       <button
-                        onClick={() => setDeleteConfirm({id: assignment.id, title: assignment.title})}
+                        onClick={() => setDeleteConfirm({ id: assignment.id, title: assignment.title })}
                         className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
                       >
                         Delete
@@ -407,7 +408,7 @@ export default function TeacherAssignmentsPage() {
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete "<strong>{deleteConfirm.title}</strong>"? 
+                Are you sure you want to delete &quot;<strong>{deleteConfirm.title}</strong>&quot;?
                 This action cannot be undone and will also delete all associated submissions and groups.
               </p>
               <div className="flex gap-3 justify-end">

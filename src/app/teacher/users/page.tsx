@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchAllUsers } from "@/utils/api";
 import Link from "next/link";
 import { User } from "@/types/interfaces";
@@ -29,10 +29,6 @@ export default function TeacherUsersPage() {
     }
   }, [user]);
 
-  useEffect(() => {
-    filterUsers();
-  }, [users, searchTerm, roleFilter]);
-
   const loadData = async () => {
     try {
       setLoadingData(true);
@@ -46,13 +42,13 @@ export default function TeacherUsersPage() {
     }
   };
 
-  const filterUsers = () => {
+  const filterUsers = useCallback(() => {
     let filtered = users;
 
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
-        u => 
+        u =>
           u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           u.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -64,7 +60,11 @@ export default function TeacherUsersPage() {
     }
 
     setFilteredUsers(filtered);
-  };
+  }, [users, searchTerm, roleFilter]);
+
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
 
   const getRoleStats = () => {
     return {
@@ -230,27 +230,25 @@ export default function TeacherUsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          userItem.role.name === "pending"
-                            ? "bg-orange-100 text-orange-800"
-                            : userItem.role.name === "admin"
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${userItem.role.name === "pending"
+                          ? "bg-orange-100 text-orange-800"
+                          : userItem.role.name === "admin"
                             ? "bg-red-100 text-red-800"
                             : userItem.role.name === "teacher"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-green-100 text-green-800"
-                        }`}>
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
+                          }`}>
                           {userItem.role.name}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(userItem.created_at).toLocaleDateString()}
+                        {new Date(userItem.created_at ?? "").toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          userItem.role.name === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${userItem.role.name === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                          }`}>
                           {userItem.role.name === "pending" ? "Awaiting Approval" : "Active"}
                         </span>
                       </td>

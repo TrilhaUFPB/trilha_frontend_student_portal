@@ -35,7 +35,7 @@ export default function AdminPendingUsersPage() {
         fetchAllUsers(),
         fetchAllRoles(),
       ]);
-      
+
       // Filter only pending users
       const allUsers = usersData as User[];
       setPendingUsers(allUsers.filter(u => u.role.name === "pending"));
@@ -68,11 +68,6 @@ export default function AdminPendingUsersPage() {
     } finally {
       setProcessingUserId(null);
     }
-  };
-
-  const getRoleName = (roleId: number) => {
-    const role = roles.find(r => r.id === roleId);
-    return role ? role.name : "Unknown";
   };
 
   const getAvailableRoles = () => {
@@ -157,7 +152,7 @@ export default function AdminPendingUsersPage() {
                           </h3>
                           <p className="text-gray-600">{pendingUser.email}</p>
                           <p className="text-sm text-gray-500 mt-1">
-                            Registered on {new Date(pendingUser.created_at).toLocaleDateString()}
+                            Registered on {pendingUser.created_at ? new Date(pendingUser.created_at).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
                       </div>
@@ -184,19 +179,17 @@ export default function AdminPendingUsersPage() {
                               key={role.id}
                               onClick={() => handleApproveUser(pendingUser.id, role.id)}
                               disabled={processingUserId === pendingUser.id}
-                              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                                role.name === "student"
-                                  ? "bg-green-600 hover:bg-green-700 text-white"
-                                  : role.name === "teacher"
+                              className={`px-4 py-2 rounded-lg font-medium transition-colors ${role.name === "student"
+                                ? "bg-green-600 hover:bg-green-700 text-white"
+                                : role.name === "teacher"
                                   ? "bg-blue-600 hover:bg-blue-700 text-white"
                                   : role.name === "admin"
-                                  ? "bg-red-600 hover:bg-red-700 text-white"
-                                  : "bg-gray-600 hover:bg-gray-700 text-white"
-                              } ${
-                                processingUserId === pendingUser.id
+                                    ? "bg-red-600 hover:bg-red-700 text-white"
+                                    : "bg-gray-600 hover:bg-gray-700 text-white"
+                                } ${processingUserId === pendingUser.id
                                   ? "opacity-50 cursor-not-allowed"
                                   : ""
-                              }`}
+                                }`}
                             >
                               {processingUserId === pendingUser.id ? (
                                 "Processing..."

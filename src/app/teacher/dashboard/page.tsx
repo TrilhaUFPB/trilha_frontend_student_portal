@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
             ) : (
               assignments.slice(0, 5).map((assignment) => {
                 const submissionCount = getSubmissionCount(assignment.id);
-                
+
                 return (
                   <div key={assignment.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
@@ -241,7 +241,7 @@ export default function TeacherDashboard() {
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-800">
-                        New submission for "{assignment?.title}"
+                        New submission for &quot;{assignment?.title}&quot;
                       </p>
                       <p className="text-sm text-gray-600">
                         Submitted on {new Date(submission.submitted_at).toLocaleDateString()}

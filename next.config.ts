@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   images: {
     remotePatterns: [
       {
@@ -9,7 +12,7 @@ const nextConfig: NextConfig = {
         hostname: "via.placeholder.com",
       },
     ],
-    unoptimized: true 
+    unoptimized: true
   },
   output: 'standalone',
   poweredByHeader: false,

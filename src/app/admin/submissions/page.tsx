@@ -33,7 +33,6 @@ export default function AdminSubmissionsPage() {
         setSubmissions(subs as SubmissionTeacher[]);
         setAssignments(asg as AssignmentSubmissions[]);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Failed to load submissions", e);
       } finally {
         setLoadingData(false);

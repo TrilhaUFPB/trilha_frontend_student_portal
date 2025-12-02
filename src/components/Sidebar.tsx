@@ -1,14 +1,10 @@
 "use client";
-import add from "@/../public/add.png"
-import home from "@/../public/home.png"
-import upload from "@/../public/upload.png"
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Course } from "@/types/interfaces";
 import { fetchAllCourses } from "@/utils/api";
-import Link from "next/link";
 import type { UserRole } from "@/context/AuthContext";
-import Image from "next/image";
 import { Home, Paperclip, Plus, Upload } from "lucide-react";
 
 interface RoleNavBarProps {
@@ -40,7 +36,7 @@ export default function Sidebar({ role }: RoleNavBarProps) {
         }
 
         loadCourses();
-    }, []);
+    }, [router]);
 
     if (loading) return <div className="p-4">Loading...</div>;
     return (

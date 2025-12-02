@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { uploadDocument, createDocumentFromLink, fetchDocumentsByCourseId, fetchAllCourses } from "@/utils/api";
-import { Course } from "@/types/interfaces";
+import { Course, Document } from "@/types/interfaces";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -35,7 +35,7 @@ export default function DocumentsPage() {
   const [linkMessage, setLinkMessage] = useState("");
 
   // Documents list
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
 
   if (!loading && !user) {
@@ -69,24 +69,25 @@ export default function DocumentsPage() {
   }, [urlCourseId]);
 
   // Load documents when course changes
-  useEffect(() => {
-    if (selectedCourseId) {
-      loadDocuments();
-    }
-  }, [selectedCourseId]);
 
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     if (!selectedCourseId) return;
     try {
       setLoadingDocs(true);
       const data = await fetchDocumentsByCourseId(selectedCourseId);
-      setDocuments(data as any[]);
+      setDocuments(data as Document[]);
     } catch (error) {
       console.error("Error loading documents:", error);
     } finally {
       setLoadingDocs(false);
     }
-  };
+  }, [selectedCourseId]);
+
+  useEffect(() => {
+    if (selectedCourseId) {
+      loadDocuments();
+    }
+  }, [selectedCourseId, loadDocuments]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -118,8 +119,8 @@ export default function DocumentsPage() {
       const fileInput = document.getElementById("file-input") as HTMLInputElement;
       if (fileInput) fileInput.value = "";
       loadDocuments();
-    } catch (error: any) {
-      setUploadMessage(`Erro: ${error.message}`);
+    } catch (error) {
+      setUploadMessage(`Erro: ${error}`);
     } finally {
       setUploading(false);
     }
@@ -145,8 +146,8 @@ export default function DocumentsPage() {
       setLinkTitle("");
       setLinkDescription("");
       loadDocuments();
-    } catch (error: any) {
-      setLinkMessage(`Erro: ${error.message}`);
+    } catch (error) {
+      setLinkMessage(`Erro: ${error}`);
     } finally {
       setLinking(false);
     }
@@ -193,8 +194,8 @@ export default function DocumentsPage() {
         <button
           onClick={() => setActiveTab("upload")}
           className={`px-4 py-2 font-medium ${activeTab === "upload"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-600"
+            ? "border-b-2 border-blue-600 text-blue-600"
+            : "text-gray-600"
             }`}
         >
           Upload de Arquivo
@@ -202,8 +203,8 @@ export default function DocumentsPage() {
         <button
           onClick={() => setActiveTab("link")}
           className={`px-4 py-2 font-medium ${activeTab === "link"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-600"
+            ? "border-b-2 border-blue-600 text-blue-600"
+            : "text-gray-600"
             }`}
         >
           Vincular por Link
@@ -261,8 +262,8 @@ export default function DocumentsPage() {
             {uploadMessage && (
               <div
                 className={`p-3 rounded ${uploadMessage.includes("sucesso")
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
                   }`}
               >
                 {uploadMessage}
@@ -323,8 +324,8 @@ export default function DocumentsPage() {
             {linkMessage && (
               <div
                 className={`p-3 rounded ${linkMessage.includes("sucesso")
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
                   }`}
               >
                 {linkMessage}
@@ -385,7 +386,9 @@ export default function DocumentsPage() {
                     </div>
                     <p className="text-xs text-gray-400 mt-2">
                       Criado por: {doc.created_by?.name || "N/A"} em{" "}
-                      {new Date(doc.created_at).toLocaleDateString("pt-BR")}
+                      {doc.created_at
+                        ? new Date(doc.created_at).toLocaleDateString("pt-br")
+                        : "Data indisponível"}
                     </p>
                   </div>
                 </div>

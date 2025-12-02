@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   fetchAssignmentById, fetchAllSubmissions, createRating,
 } from "@/utils/api";
-import {AssignmentTeacher, SubmissionTeacher, TeacherAssignmentSubmissionsPageProps} from "@/types/interfaces"
+import { AssignmentTeacher, SubmissionTeacher, TeacherAssignmentSubmissionsPageProps } from "@/types/interfaces"
 
 export default function TeacherAssignmentSubmissionsPage({ assignmentId }: TeacherAssignmentSubmissionsPageProps) {
   const { user, loading } = useAuth();
@@ -14,7 +14,7 @@ export default function TeacherAssignmentSubmissionsPage({ assignmentId }: Teach
   const [loadingData, setLoadingData] = useState(true);
   const [scoreById, setScoreById] = useState<Record<number, string>>({});
   const [feedbackById, setFeedbackById] = useState<Record<number, string>>({});
-  const [submittingId, setSubmittingId] = useState<number | null>(null); 
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -34,7 +34,7 @@ export default function TeacherAssignmentSubmissionsPage({ assignmentId }: Teach
         setAssignment(a as AssignmentTeacher);
         setSubmissions((subs as SubmissionTeacher[]).filter(s => s.assignment_id === assignmentId));
       } catch (e) {
-        // eslint-disable-next-line no-console
+
         console.error("Failed to load assignment submissions", e);
       } finally {
         setLoadingData(false);
@@ -55,7 +55,7 @@ export default function TeacherAssignmentSubmissionsPage({ assignmentId }: Teach
       await createRating({ submission_id: submissionId, score, feedback });
       alert("Rating saved");
     } catch (e) {
-      // eslint-disable-next-line no-console
+
       console.error("Failed to rate", e);
       alert("Failed to save rating");
     } finally {

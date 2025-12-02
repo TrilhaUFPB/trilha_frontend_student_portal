@@ -19,7 +19,7 @@ export default function AdminCreateUserPage() {
     confirmPassword: "",
     role_id: 0,
   });
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   useEffect(() => {
     if (!loading && !user) {
@@ -40,7 +40,7 @@ export default function AdminCreateUserPage() {
       setLoadingData(true);
       const rolesData = await fetchAllRoles();
       setRoles(rolesData as Role[]);
-      
+
       // Set default role to student
       const studentRole = (rolesData as Role[]).find(r => r.name === "student");
       if (studentRole) {
@@ -55,7 +55,7 @@ export default function AdminCreateUserPage() {
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     // Name validation
     if (!formData.name.trim()) {
@@ -87,7 +87,7 @@ export default function AdminCreateUserPage() {
 
     // Role validation
     if (!formData.role_id || formData.role_id === 0) {
-      newErrors.role_id = "Please select a role" as any;
+      newErrors.role_id = "Please select a role";
     }
 
     setErrors(newErrors);
@@ -96,14 +96,14 @@ export default function AdminCreateUserPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setSubmitting(true);
-      
+
       await createUser({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -123,7 +123,7 @@ export default function AdminCreateUserPage() {
 
   const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -187,9 +187,8 @@ export default function AdminCreateUserPage() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Enter user's full name"
               />
               {errors.name && (
@@ -207,9 +206,8 @@ export default function AdminCreateUserPage() {
                 id="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Enter user's email address"
               />
               {errors.email && (
@@ -227,9 +225,8 @@ export default function AdminCreateUserPage() {
                 id="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Enter password (min 6 characters)"
               />
               {errors.password && (
@@ -247,9 +244,8 @@ export default function AdminCreateUserPage() {
                 id="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Confirm the password"
               />
               {errors.confirmPassword && (
@@ -266,9 +262,8 @@ export default function AdminCreateUserPage() {
                 id="role"
                 value={formData.role_id}
                 onChange={(e) => handleInputChange("role_id", Number(e.target.value))}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.role_id ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.role_id ? "border-red-500" : "border-gray-300"
+                  }`}
               >
                 <option value={0}>Select a role...</option>
                 {roles
@@ -294,11 +289,10 @@ export default function AdminCreateUserPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className={`flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors ${
-                  submitting
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-blue-700"
-                }`}
+                className={`flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors ${submitting
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-blue-700"
+                  }`}
               >
                 {submitting ? "Creating User..." : "Create User"}
               </button>

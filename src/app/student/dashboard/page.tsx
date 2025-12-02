@@ -109,7 +109,7 @@ export default function StudentDashboard() {
               assignments.map((assignment) => {
                 const submissionStatus = getSubmissionStatus(assignment.id);
                 const overdue = isOverdue(assignment.due_date);
-                
+
                 return (
                   <div key={assignment.id} className="p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between">
@@ -123,13 +123,12 @@ export default function StudentDashboard() {
                               Group Work
                             </span>
                           )}
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            submissionStatus.status === "submitted"
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${submissionStatus.status === "submitted"
                               ? "bg-green-100 text-green-800"
                               : overdue
                                 ? "bg-red-100 text-red-800"
                                 : "bg-orange-100 text-orange-800"
-                          }`}>
+                            }`}>
                             {submissionStatus.status === "submitted"
                               ? "Submitted"
                               : overdue
@@ -212,7 +211,7 @@ export default function StudentDashboard() {
                   <div key={submission.id} className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span>
-                      Submitted "{assignment?.title}" on {new Date(submission.submitted_at).toLocaleDateString()}
+                      Submitted &quot;{assignment?.title}&quot; on {new Date(submission.submitted_at).toLocaleDateString()}
                     </span>
                   </div>
                 );

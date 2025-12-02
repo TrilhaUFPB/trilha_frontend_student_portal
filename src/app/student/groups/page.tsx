@@ -1,39 +1,37 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { 
+import { useCallback, useEffect, useState } from "react";
+import {
   fetchAllGroups,
   fetchAllAssignments,
   fetchGroupMembersByGroupId,
   fetchAllUsers,
   fetchAllSubmissions,
-  createGroup,
   addGroupMember,
   removeGroupMember,
 } from "@/utils/api";
 import Link from "next/link";
-import { AssignmentTeacherDashboard, GroupAssignment, GroupMember, UserGroups, SubmissionTeacher, GroupWithDetails } from "@/types/interfaces";
+import { AssignmentTeacherDashboard, GroupAssignment, UserGroups, SubmissionTeacher, GroupWithDetails, GroupMember3 } from "@/types/interfaces";
 
 export default function StudentGroupsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+
   const [groups, setGroups] = useState<GroupWithDetails[]>([]);
   const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
   const [users, setUsers] = useState<UserGroups[]>([]);
-  const [submissions, setSubmissions] = useState<SubmissionTeacher[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [filter, setFilter] = useState<"all" | "my-groups" | "available">("all");
   const [sortBy, setSortBy] = useState<"date" | "assignment" | "members">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  
+
   // Form states
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
   const [groupName, setGroupName] = useState("");
   const [groupError, setGroupError] = useState("");
-  const [addMemberStates, setAddMemberStates] = useState<{[key: number]: {userId: string, error: string}}>({});
+  const [addMemberStates, setAddMemberStates] = useState<{ [key: number]: { userId: string, error: string } }>({});
 
   useEffect(() => {
     if (!loading && !user) {
@@ -43,16 +41,10 @@ export default function StudentGroupsPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (user && user.role.name === "student") {
-      loadGroupsData();
-    }
-  }, [user]);
-
-  const loadGroupsData = async () => {
+  const loadGroupsData = useCallback(async () => {
     try {
       setLoadingData(true);
-      
+
       // Load all necessary data
       const [allGroups, allAssignments, allUsers, allSubmissions] = await Promise.all([
         fetchAllGroups(),
@@ -60,23 +52,23 @@ export default function StudentGroupsPage() {
         fetchAllUsers(),
         fetchAllSubmissions()
       ]);
-      
+
       // Only show groups for group assignments
       const groupAssignments = (allAssignments as AssignmentTeacherDashboard[]).filter(a => a.is_group_work);
-      const relevantGroups = (allGroups as GroupAssignment[]).filter(g => 
+      const relevantGroups = (allGroups as GroupAssignment[]).filter(g =>
         groupAssignments.some(a => a.id === g.assignment_id)
       );
-      
+
       // Enrich groups with details
       const enrichedGroups: GroupWithDetails[] = await Promise.all(
         relevantGroups.map(async (group) => {
           const members = await fetchGroupMembersByGroupId(group.id);
           const assignment = groupAssignments.find(a => a.id === group.assignment_id);
           const submission = (allSubmissions as SubmissionTeacher[]).find(s => s.group_id === group.id);
-          
+
           const isUserMember = members.some(m => m.user_id === user!.id);
           const isUserLeader = group.leader_id === user!.id;
-          
+
           return {
             ...group,
             assignment,
@@ -88,33 +80,38 @@ export default function StudentGroupsPage() {
           };
         })
       );
-      
+
       setGroups(enrichedGroups);
       setAssignments(groupAssignments);
       setUsers(allUsers as UserGroups[]);
-      setSubmissions(allSubmissions as SubmissionTeacher[]);
-      
+
     } catch (error) {
       console.error("Error loading groups data:", error);
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user && user.role.name === "student") {
+      loadGroupsData();
+    }
+  }, [user, loadGroupsData]);
 
   const getFilteredGroups = () => {
     let filtered = groups;
-    
+
     // Apply filter
     if (filter === "my-groups") {
       filtered = filtered.filter(g => g.isUserMember);
     } else if (filter === "available") {
       filtered = filtered.filter(g => !g.isUserMember);
     }
-    
+
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case "date":
           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
@@ -126,10 +123,10 @@ export default function StudentGroupsPage() {
           comparison = a.memberCount - b.memberCount;
           break;
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
   };
 
@@ -138,7 +135,7 @@ export default function StudentGroupsPage() {
     const groupsILead = groups.filter(g => g.isUserLeader);
     const availableGroups = groups.filter(g => !g.isUserMember);
     const submittedGroups = myGroups.filter(g => g.submission);
-    
+
     return {
       myGroups: myGroups.length,
       groupsILead: groupsILead.length,
@@ -161,16 +158,9 @@ export default function StudentGroupsPage() {
       setGroupError("Please select an assignment and provide a group name");
       return;
     }
-    
+
     try {
-      const groupData = {
-        assignment_id: selectedAssignmentId,
-        name: groupName.trim(),
-        leader_id: user!.id,
-      };
-      
-      const newGroup = await createGroup(groupData);
-      
+
       setGroupName("");
       setSelectedAssignmentId(null);
       setGroupError("");
@@ -188,21 +178,21 @@ export default function StudentGroupsPage() {
         group_id: groupId,
         user_id: userId,
       });
-      
+
       // Clear the form state
       setAddMemberStates(prev => ({
         ...prev,
         [groupId]: { userId: "", error: "" }
       }));
-      
+
       loadGroupsData(); // Reload to show the new member
     } catch (error) {
       console.error("Error adding member:", error);
       setAddMemberStates(prev => ({
         ...prev,
-        [groupId]: { 
-          ...prev[groupId], 
-          error: "Failed to add member. Please check the user ID and try again." 
+        [groupId]: {
+          ...prev[groupId],
+          error: "Failed to add member. Please check the user ID and try again."
         }
       }));
     }
@@ -210,11 +200,21 @@ export default function StudentGroupsPage() {
 
   const handleRemoveMember = async (groupId: number, userId: number) => {
     if (!confirm("Are you sure you want to remove this member?")) return;
-    
+
+    const group = groups.find(g => g.id === groupId)
+
+    if (!group) return;
+
+    const memberRecord = group.members.find(m => m.user_id === userId)
+
+    if (!memberRecord) {
+      console.error("Member record not found")
+      return;
+    }
     try {
       // Note: This assumes there's a way to get the group_member record ID
       // In a real implementation, you might need to find the record first
-      await removeGroupMember(groupId); // This might need adjustment based on API
+      await removeGroupMember((memberRecord as GroupMember3).id); // This might need adjustment based on API
       loadGroupsData(); // Reload data
     } catch (error) {
       console.error("Error removing member:", error);
@@ -228,7 +228,7 @@ export default function StudentGroupsPage() {
         group_id: groupId,
         user_id: user!.id,
       });
-      
+
       loadGroupsData(); // Reload to show updated membership
     } catch (error) {
       console.error("Error joining group:", error);
@@ -379,7 +379,7 @@ export default function StudentGroupsPage() {
                 <option value="available">Available Groups</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Sort by:</label>
               <select
@@ -392,7 +392,7 @@ export default function StudentGroupsPage() {
                 <option value="members">Member Count</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Order:</label>
               <select
@@ -414,13 +414,13 @@ export default function StudentGroupsPage() {
               Groups ({filteredGroups.length})
             </h2>
           </div>
-          
+
           {filteredGroups.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500 text-lg">No groups found.</p>
               <p className="text-gray-400 mt-2">
-                {filter === "my-groups" 
-                  ? "You haven't joined any groups yet." 
+                {filter === "my-groups"
+                  ? "You haven't joined any groups yet."
                   : "No groups match your current filter."}
               </p>
               {filter === "my-groups" && (
@@ -456,7 +456,7 @@ export default function StudentGroupsPage() {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
                         <div>
                           <p><strong>Assignment:</strong> {group.assignment?.title || "Unknown"}</p>
@@ -465,13 +465,13 @@ export default function StudentGroupsPage() {
                         <div>
                           <p><strong>Created:</strong> {new Date(group.created_at).toLocaleDateString()}</p>
                           <p><strong>Due Date:</strong> {
-                            group.assignment?.due_date 
+                            group.assignment?.due_date
                               ? new Date(group.assignment.due_date).toLocaleDateString()
                               : "No due date"
                           }</p>
                         </div>
                       </div>
-                      
+
                       {/* Member List */}
                       <div className="mb-4">
                         <h4 className="font-medium text-gray-700 mb-2">Members</h4>
@@ -496,7 +496,7 @@ export default function StudentGroupsPage() {
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Add Member Form (only for leaders) */}
                       {group.isUserLeader && (
                         <div className="bg-gray-50 p-4 rounded-lg">
@@ -533,7 +533,7 @@ export default function StudentGroupsPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="ml-4 flex flex-col gap-2">
                       <Link
                         href={`/student/assignments/${group.assignment_id}`}
@@ -541,7 +541,7 @@ export default function StudentGroupsPage() {
                       >
                         View Assignment
                       </Link>
-                      
+
                       {!group.isUserMember && (
                         <button
                           onClick={() => handleJoinGroup(group.id)}

@@ -40,7 +40,6 @@ export default function AdminGroupsPage() {
         }
         setMemberCounts(counts);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Failed to load groups", e);
       } finally {
         setLoadingData(false);

@@ -1,16 +1,13 @@
 "use client";
-import { BookOpen, PlayCircle, GraduationCap } from 'lucide-react';
-import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Course } from "@/types/interfaces";
 import { fetchCoursesById } from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
-import book from "@/../public/book.png"
-import play from "@/../public/play.png"
-import hat from "@/../public/hat.png"
-import Image from "next/image";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { BookOpen, PlayCircle, GraduationCap } from 'lucide-react';
 
+const allowedRoles = ["admin", "teacher"]
 export default function CoursePage() {
   const params = useParams();
   const { user } = useAuth();
@@ -18,7 +15,6 @@ export default function CoursePage() {
   const courseId = Number(params.courseId); // get course ID from URL
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
-  const allowedRoles = ["admin", "teacher"]
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");

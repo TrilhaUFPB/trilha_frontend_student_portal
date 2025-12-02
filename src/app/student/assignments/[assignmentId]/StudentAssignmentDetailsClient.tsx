@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   fetchCurrentUser,
@@ -14,7 +14,7 @@ import {
   createSubmission,
   updateSubmission,
 } from "@/utils/api";
-import { AssignmentReview3, Rating2, GroupStudent, CommentStudent, GroupMember3, UserReview, SubmissionReview2} from "@/types/interfaces";
+import { AssignmentReview3, Rating2, GroupStudent, CommentStudent, GroupMember3, UserReview, SubmissionReview2 } from "@/types/interfaces";
 
 interface Props {
   assignment: AssignmentReview3;
@@ -39,11 +39,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'submit' | 'group' | 'feedback'>('details');
 
-  useEffect(() => {
-    fetchData();
-  }, [assignmentId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -68,9 +64,9 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           }
         } catch (err) {
           // User doesn't have a group yet
-          console.log("User doesn't have a group yet");
+          console.log("User doesn't have a group yet", err);
         }
-        
+
         // Fetch available groups
         const groupsData = await fetchGroupsByAssignmentId(assignmentId);
         setAvailableGroups(groupsData as GroupStudent[]);
@@ -80,20 +76,20 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           submissionData = await fetchUserSubmissionForAssignment(assignmentId, currentUserData.id) as SubmissionReview2;
         } catch (err) {
           // User hasn't submitted yet
-          console.log("User hasn't submitted yet");
+          console.log("User hasn't submitted yet", err);
         }
       }
 
       if (submissionData) {
         setSubmission(submissionData);
         setSubmissionLink(submissionData.submissionLink);
-        
+
         // Fetch comments and ratings for the submission
         const [commentsData, ratingsData] = await Promise.all([
           fetchCommentsBySubmissionId(submissionData.id),
           fetchRatingsBySubmissionId(submissionData.id),
         ]);
-        
+
         setComments(commentsData as CommentStudent[]);
         setRatings(ratingsData as Rating2[]);
       }
@@ -103,7 +99,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
     } finally {
       setLoading(false);
     }
-  };
+  }, [assignmentId, assignment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,11 +134,15 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const getSubmissionStatus = () => {
     if (!submission) return "Not Submitted";
-    
+
     if (assignment.is_group_work && !userGroup) return "No Group";
-    
+
     return submission.status === "submitted" ? "Submitted" : submission.status;
   };
 
@@ -191,19 +191,17 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
           <div className="flex gap-2">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              assignment.is_group_work 
-                ? 'bg-purple-100 text-purple-800' 
-                : 'bg-blue-100 text-blue-800'
-            }`}>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${assignment.is_group_work
+              ? 'bg-purple-100 text-purple-800'
+              : 'bg-blue-100 text-blue-800'
+              }`}>
               {assignment.is_group_work ? 'Group Assignment' : 'Individual Assignment'}
             </span>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor()}`}>
               {getSubmissionStatus()}
             </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isOverdue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-            }`}>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${isOverdue ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+              }`}>
               Due: {new Date(assignment.due_date).toLocaleDateString()}
             </span>
           </div>
@@ -252,32 +250,29 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
         <div className="flex border-b border-gray-200">
           <button
             onClick={() => setActiveTab('details')}
-            className={`px-6 py-3 font-medium text-sm ${
-              activeTab === 'details'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-6 py-3 font-medium text-sm ${activeTab === 'details'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             Assignment Details
           </button>
           <button
             onClick={() => setActiveTab('submit')}
-            className={`px-6 py-3 font-medium text-sm ${
-              activeTab === 'submit'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-6 py-3 font-medium text-sm ${activeTab === 'submit'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             {submission ? 'Update Submission' : 'Submit Assignment'}
           </button>
           {assignment.is_group_work && (
             <button
               onClick={() => setActiveTab('group')}
-              className={`px-6 py-3 font-medium text-sm ${
-                activeTab === 'group'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`px-6 py-3 font-medium text-sm ${activeTab === 'group'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               Group Management
             </button>
@@ -285,11 +280,10 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
           {submission && (
             <button
               onClick={() => setActiveTab('feedback')}
-              className={`px-6 py-3 font-medium text-sm ${
-                activeTab === 'feedback'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`px-6 py-3 font-medium text-sm ${activeTab === 'feedback'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
             >
               Feedback ({comments.length + ratings.length})
             </button>
@@ -305,7 +299,7 @@ export default function StudentAssignmentDetailsClient({ assignment, assignmentI
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
                 <p className="text-gray-600 whitespace-pre-wrap">{assignment.description}</p>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Assignment Link</h3>
                 <a

@@ -1,9 +1,9 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { 
-  fetchAllSubmissions, 
+import { useCallback, useEffect, useState } from "react";
+import {
+  fetchAllSubmissions,
   fetchAllAssignments,
   fetchUserGroupForAssignment,
   fetchCommentsBySubmissionId,
@@ -24,9 +24,8 @@ interface SubmissionWithDetails extends SubmissionTeacher {
 export default function StudentSubmissionsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+
   const [submissions, setSubmissions] = useState<SubmissionWithDetails[]>([]);
-  const [assignments, setAssignments] = useState<AssignmentTeacherDashboard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [filter, setFilter] = useState<"all" | "individual" | "group">("all");
   const [sortBy, setSortBy] = useState<"date" | "assignment" | "status">("date");
@@ -40,34 +39,28 @@ export default function StudentSubmissionsPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (user && user.role.name === "student") {
-      loadSubmissionsData();
-    }
-  }, [user]);
-
-  const loadSubmissionsData = async () => {
+  const loadSubmissionsData = useCallback(async () => {
     try {
       setLoadingData(true);
-      
+
       // Load all submissions and assignments
       const [allSubmissions, allAssignments] = await Promise.all([
         fetchAllSubmissions(),
         fetchAllAssignments()
       ]);
-      
+
       // Filter submissions for the current user
-      const userSubmissions = (allSubmissions as SubmissionTeacher[]).filter(s => 
+      const userSubmissions = (allSubmissions as SubmissionTeacher[]).filter(s =>
         s.user_id === user!.id
       );
-      
+
       // Find group submissions for assignments where user is in a group
       const groupSubmissions: SubmissionTeacher[] = [];
       for (const assignment of allAssignments as AssignmentTeacherDashboard[]) {
         if (assignment.is_group_work) {
           const userGroup = await fetchUserGroupForAssignment(assignment.id, user!.id);
           if (userGroup) {
-            const groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s => 
+            const groupSubmission = (allSubmissions as SubmissionTeacher[]).find(s =>
               s.assignment_id === assignment.id && s.group_id === userGroup.id
             );
             if (groupSubmission) {
@@ -76,22 +69,22 @@ export default function StudentSubmissionsPage() {
           }
         }
       }
-      
+
       // Combine individual and group submissions
       const allUserSubmissions = [...userSubmissions, ...groupSubmissions];
-      
+
       // Remove duplicates based on submission id
-      const uniqueSubmissions = allUserSubmissions.filter((submission, index, self) => 
+      const uniqueSubmissions = allUserSubmissions.filter((submission, index, self) =>
         index === self.findIndex(s => s.id === submission.id)
       );
-      
+
       // Enrich submissions with assignment details, comments, and ratings
       const enrichedSubmissions: SubmissionWithDetails[] = await Promise.all(
         uniqueSubmissions.map(async (submission) => {
           const assignment = (allAssignments as AssignmentTeacherDashboard[]).find(a => a.id === submission.assignment_id)!;
           const comments = await fetchCommentsBySubmissionId(submission.id);
           const ratings = await fetchRatingsBySubmissionId(submission.id);
-          
+
           let group: Group | undefined = undefined;
           if (submission.group_id) {
             try {
@@ -100,11 +93,11 @@ export default function StudentSubmissionsPage() {
               console.error(`Error fetching group ${submission.group_id}:`, error);
             }
           }
-          
-          const averageRating = ratings.length > 0 
-            ? ratings.reduce((sum: number, rating: any) => sum + rating.score, 0) / ratings.length 
+
+          const averageRating = ratings.length > 0
+            ? ratings.reduce((sum: number, rating: Rating) => sum + rating.score, 0) / ratings.length
             : undefined;
-          
+
           return {
             ...submission,
             assignment,
@@ -115,31 +108,36 @@ export default function StudentSubmissionsPage() {
           };
         })
       );
-      
+
       setSubmissions(enrichedSubmissions);
-      setAssignments(allAssignments as AssignmentTeacherDashboard[]);
-      
+
     } catch (error) {
       console.error("Error loading submissions data:", error);
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user && user.role.name === "student") {
+      loadSubmissionsData();
+    }
+  }, [user, loadSubmissionsData]);
 
   const getFilteredSubmissions = () => {
     let filtered = submissions;
-    
+
     // Apply filter
     if (filter === "individual") {
       filtered = filtered.filter(s => !s.group_id);
     } else if (filter === "group") {
       filtered = filtered.filter(s => s.group_id);
     }
-    
+
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case "date":
           comparison = new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime();
@@ -151,10 +149,10 @@ export default function StudentSubmissionsPage() {
           comparison = a.status.localeCompare(b.status);
           break;
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
   };
 
@@ -165,7 +163,7 @@ export default function StudentSubmissionsPage() {
     const ratedSubmissions = submissions.filter(s => s.ratings.length > 0).length;
     const averageRating = submissions.filter(s => s.averageRating !== undefined)
       .reduce((sum, s) => sum + s.averageRating!, 0) / ratedSubmissions || 0;
-    
+
     return {
       totalSubmissions,
       individualSubmissions,
@@ -269,7 +267,7 @@ export default function StudentSubmissionsPage() {
                 <option value="group">Group Only</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Sort by:</label>
               <select
@@ -282,7 +280,7 @@ export default function StudentSubmissionsPage() {
                 <option value="status">Status</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">Order:</label>
               <select
@@ -304,7 +302,7 @@ export default function StudentSubmissionsPage() {
               Submissions ({filteredSubmissions.length})
             </h2>
           </div>
-          
+
           {filteredSubmissions.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500 text-lg">No submissions found.</p>
@@ -338,7 +336,7 @@ export default function StudentSubmissionsPage() {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
                         <div>
                           <p><strong>Submitted:</strong> {new Date(submission.submitted_at).toLocaleString()}</p>
@@ -346,14 +344,14 @@ export default function StudentSubmissionsPage() {
                         </div>
                         <div>
                           <p><strong>Due Date:</strong> {
-                            submission.assignment.due_date 
+                            submission.assignment.due_date
                               ? new Date(submission.assignment.due_date).toLocaleString()
                               : "No due date"
                           }</p>
                           <p><strong>Type:</strong> {submission.assignment.is_group_work ? "Group Assignment" : "Individual Assignment"}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-4 text-sm">
                         <a
                           href={submission.submission_link}
@@ -363,13 +361,13 @@ export default function StudentSubmissionsPage() {
                         >
                           View Repository →
                         </a>
-                        
+
                         {submission.comments.length > 0 && (
                           <span className="text-gray-500">
                             💬 {submission.comments.length} comment{submission.comments.length > 1 ? 's' : ''}
                           </span>
                         )}
-                        
+
                         {submission.ratings.length > 0 && (
                           <span className="text-gray-500">
                             ⭐ {submission.ratings.length} rating{submission.ratings.length > 1 ? 's' : ''}
@@ -380,7 +378,7 @@ export default function StudentSubmissionsPage() {
                             )}
                           </span>
                         )}
-                        
+
                         {submission.assignment.due_date && isOverdue(submission.assignment.due_date) && (
                           <span className="text-red-600 font-medium">
                             ⚠️ Was overdue
@@ -388,7 +386,7 @@ export default function StudentSubmissionsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="ml-4">
                       <Link
                         href={`/student/assignments/${submission.assignment.id}`}

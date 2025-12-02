@@ -8,8 +8,8 @@ import Link from "next/link";
 import { Course } from "@/types/interfaces";
 import { fetchAllCourses } from "@/utils/api";
 
+const allowedRoles = ["admin", "teacher"];
 export default function CoursesPage() {
-  const allowedRoles = ["admin", "teacher"];
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -33,7 +33,7 @@ export default function CoursesPage() {
       try {
         const res = await fetchAllCourses();
         // res pode ser Course[] ou { data: Course[] } dependendo da API — normalizamos:
-        const list = Array.isArray(res) ? res : (res && typeof res === "object" && "data" in res ? (res as any).data : []);
+        const list = Array.isArray(res) ? res : (res && typeof res === "object" && "data" in res ? (res as { data: Course[] }).data : []);
         if (!mounted) return;
         setCourses(list as Course[]);
       } catch (err) {

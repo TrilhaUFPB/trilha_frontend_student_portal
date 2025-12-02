@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   fetchAssignmentById,
   updateAssignment,
@@ -9,7 +9,7 @@ import {
   fetchAllGroups
 } from "@/utils/api";
 import Link from "next/link";
-import { AssignmentTeacherDashboard } from "@/types/interfaces";
+import { AssignmentTeacherDashboard, Group, SubmissionTeacher } from "@/types/interfaces";
 
 export default function EditAssignmentPage({
   params: paramsPromise,
@@ -41,18 +41,12 @@ export default function EditAssignmentPage({
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && user.role.name !== "teacher" && !loading && user && user.role.name !== "admin" ) {
+    } else if (!loading && user && user.role.name !== "teacher" && !loading && user && user.role.name !== "admin") {
       router.push("/");
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (user && user.role.name === "teacher" || user && user.role.name === "admin") {
-      loadAssignmentData();
-    }
-  }, [user, assignmentId]);
-
-  const loadAssignmentData = async () => {
+  const loadAssignmentData = useCallback(async () => {
     try {
       setLoadingData(true);
 
@@ -66,8 +60,8 @@ export default function EditAssignmentPage({
       setOriginalAssignment(assignmentData);
 
       // Check if assignment has submissions or groups
-      const submissions = (allSubmissions as any[]).filter(s => s.assignment_id === assignmentId);
-      const groups = (allGroups as any[]).filter(g => g.assignment_id === assignmentId);
+      const submissions = (allSubmissions as SubmissionTeacher[]).filter(s => s.assignment_id === assignmentId);
+      const groups = (allGroups as Group[]).filter(g => g.assignment_id === assignmentId);
       setHasSubmissions(submissions.length > 0);
       setHasGroups(groups.length > 0);
 
@@ -86,7 +80,13 @@ export default function EditAssignmentPage({
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [assignmentId, router]);
+
+  useEffect(() => {
+    if (user && user.role.name === "teacher" || user && user.role.name === "admin") {
+      loadAssignmentData();
+    }
+  }, [user, assignmentId, loadAssignmentData]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -116,7 +116,6 @@ export default function EditAssignmentPage({
 
     if (formData.due_date && formData.due_date.trim()) {
       const due_date = new Date(formData.due_date);
-      const now = new Date();
 
       if (isNaN(due_date.getTime())) {
         newErrors.due_date = "Please enter a valid date";

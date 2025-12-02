@@ -6,6 +6,7 @@ import { Video, Course } from "@/types/interfaces";
 import { createVideos, fetchAllCourses } from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 
+const allowedRoles = ["admin", "teacher"]
 export default function UploadVideoPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
@@ -14,7 +15,6 @@ export default function UploadVideoPage() {
   const [url, setUrl] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
-  const allowedRoles = ["admin", "teacher"]
 
   useEffect(() => {
     if (!loading && !user) {

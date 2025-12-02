@@ -36,7 +36,6 @@ export default function TeacherSubmissionsPage() {
         });
         setSubmissionCounts(counts);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Failed to load teacher submissions", e);
       } finally {
         setLoadingData(false);

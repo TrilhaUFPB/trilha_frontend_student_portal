@@ -9,6 +9,7 @@ import {
   deleteVideos,
   deleteCourses, // sua função existente
 } from "@/utils/api";
+import { Video } from "@/types/interfaces";
 
 type Props = {
   courseId: number;
@@ -47,7 +48,7 @@ export default function DeleteCourseButton({ courseId, onDeleted }: Props) {
       try {
         const allVideos = await fetchAllVideos();
         if (Array.isArray(allVideos) && allVideos.length > 0) {
-          const videosToDelete = (allVideos as any[]).filter(v => Number(v.course_id) === Number(courseId) || Number(v.CourseId) === Number(courseId));
+          const videosToDelete = (allVideos as Video[]).filter(v => Number(v.CourseId) === Number(courseId));
           if (videosToDelete.length > 0) {
             const vidPromises = videosToDelete.map(v => deleteVideos(v.id).catch(e => ({ ok: false, id: v.id, e })));
             await Promise.allSettled(vidPromises);

@@ -53,9 +53,9 @@ export default function PendingPage() {
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6 text-left">
-            <h2 className="text-xl font-semibold mb-3 text-blue-800">What's Next?</h2>
+            <h2 className="text-xl font-semibold mb-3 text-blue-800">What&apos;s Next?</h2>
             <p className="text-blue-700 mb-3">
-              Your account is currently awaiting approval from an administrator or professor. Once approved, you'll be assigned a role and gain access to the platform features.
+              Your account is currently awaiting approval from an administrator or professor. Once approved, you&apos;ll be assigned a role and gain access to the platform features.
             </p>
             <ul className="text-blue-700 space-y-2">
               <li>• <strong>Student:</strong> Access assignments, submit work, and join groups</li>

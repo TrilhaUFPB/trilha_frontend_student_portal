@@ -30,7 +30,7 @@ export default function TeacherPendingUsersPage() {
     try {
       setLoadingData(true);
       const usersData = await fetchAllUsers();
-      
+
       // Filter only pending users
       const allUsers = usersData as User[];
       setPendingUsers(allUsers.filter(u => u.role.name === "pending"));
@@ -188,7 +188,7 @@ export default function TeacherPendingUsersPage() {
               </p>
               <div className="text-sm text-yellow-700">
                 <p><strong>Admin Contact:</strong> admin@trilha.com</p>
-                <p><strong>Include:</strong> User's name and recommended role</p>
+                <p><strong>Include:</strong> User&apos;s name and recommended role</p>
               </div>
             </div>
             <div>

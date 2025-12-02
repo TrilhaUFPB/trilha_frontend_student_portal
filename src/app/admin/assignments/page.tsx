@@ -27,7 +27,6 @@ export default function AdminAssignmentsPage() {
         const data = await fetchAllAssignments();
         setAssignments(data as AssignmentTeacherDashboard[]);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("Failed to load assignments", e);
       } finally {
         setLoadingData(false);
